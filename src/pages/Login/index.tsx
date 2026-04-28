@@ -1,4 +1,41 @@
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import api from '../../services/api';
+
 export default function Login() {
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+
+    try {
+      const response = await api.post('/api/v1/auth/login/', {
+        username,
+        password,
+      });
+
+      // DRF SimpleJWT retorna access e refresh
+      localStorage.setItem('access_token', response.data.access);
+      localStorage.setItem('refresh_token', response.data.refresh);
+      
+      // Redireciona para o dashboard
+      navigate('/dashboard');
+    } catch (err: any) {
+      setError(
+        err.response?.data?.detail || 
+        'Erro ao fazer login. Verifique suas credenciais.'
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-50 relative overflow-hidden">
       {/* Background decoration */}
@@ -17,13 +54,22 @@ export default function Login() {
             <p className="text-slate-500 mt-2">Faça login para gerenciar a gráfica</p>
           </div>
 
-          <form className="space-y-6">
+          <form onSubmit={handleLogin} className="space-y-6">
+            {error && (
+              <div className="p-3 bg-red-50 text-red-600 text-sm rounded-xl border border-red-100 text-center">
+                {error}
+              </div>
+            )}
+
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">E-mail</label>
+              <label className="block text-sm font-medium text-slate-700 mb-2">Usuário (Admin)</label>
               <input 
-                type="email" 
+                type="text" 
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                required
                 className="w-full bg-slate-50 border border-slate-200 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 rounded-xl px-4 py-3 outline-none transition-all duration-300" 
-                placeholder="admin@jlcamisas.com"
+                placeholder="admin"
               />
             </div>
 
@@ -34,13 +80,20 @@ export default function Login() {
               </div>
               <input 
                 type="password" 
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
                 className="w-full bg-slate-50 border border-slate-200 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 rounded-xl px-4 py-3 outline-none transition-all duration-300" 
                 placeholder="••••••••"
               />
             </div>
 
-            <button type="button" className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold rounded-xl px-4 py-3.5 shadow-lg shadow-blue-500/25 transition-all duration-300 hover:shadow-blue-500/40 hover:-translate-y-0.5">
-              Entrar
+            <button 
+              type="submit" 
+              disabled={loading}
+              className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 disabled:opacity-70 text-white font-semibold rounded-xl px-4 py-3.5 shadow-lg shadow-blue-500/25 transition-all duration-300 hover:shadow-blue-500/40 hover:-translate-y-0.5 flex justify-center items-center"
+            >
+              {loading ? 'Entrando...' : 'Entrar'}
             </button>
           </form>
         </div>
