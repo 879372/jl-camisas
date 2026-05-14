@@ -542,7 +542,7 @@ const Orcamento: React.FC = () => {
           {currentStep > 1 && (
             <button
               onClick={prevStep}
-              className="h-14 md:h-16 px-10 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-bold uppercase tracking-wide flex items-center justify-center gap-2 transition-all order-2 md:order-1 text-sm md:text-base"
+              className="h-16 md:h-16 px-10 bg-slate-800 hover:bg-slate-700 text-white rounded-2xl font-black uppercase tracking-widest flex items-center justify-center gap-2 transition-all order-2 md:order-1 text-base md:text-lg"
             >
               <ChevronLeft className="w-6 h-6" /> Voltar
             </button>
@@ -551,14 +551,14 @@ const Orcamento: React.FC = () => {
           <button
             onClick={currentStep < 8 ? nextStep : handleFinish}
             disabled={isSubmitting}
-            className={`flex-1 h-14 md:h-16 btn-primary text-white rounded-xl font-bold uppercase tracking-wider italic text-base md:text-lg flex items-center justify-center gap-3 transition-all order-1 md:order-2 ${isSubmitting ? 'opacity-75 cursor-not-allowed' : ''}`}
+            className={`flex-1 h-16 md:h-16 btn-primary text-slate-900 rounded-2xl font-black uppercase tracking-widest italic text-lg md:text-xl flex items-center justify-center gap-3 transition-all order-1 md:order-2 ${isSubmitting ? 'opacity-75 cursor-not-allowed' : ''}`}
           >
             {currentStep === 8 ? (
-              isSubmitting ? <><RotateCw className="w-6 h-6 animate-spin" /> ENVIANDO...</> : <><Send className="w-6 h-6" /> FINALIZAR PROJETO</>
+              isSubmitting ? <><RotateCw className="w-7 h-7 animate-spin" /> ENVIANDO...</> : <><Send className="w-7 h-7" /> FINALIZAR PROJETO</>
             ) : currentStep === 7 ? (
               'GERAR RESUMO'
             ) : (
-              <><ChevronRight className="w-6 h-6" /> CONTINUAR</>
+              <><ChevronRight className="w-7 h-7" /> CONTINUAR</>
             )}
           </button>
         </div>
