@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Plus, Search, MoreVertical, Calendar, Clock, User, ArrowRight, Maximize2, Hash } from 'lucide-react';
+import { Plus, Search, MoreVertical, Calendar, User, ArrowRight, Maximize2, Hash } from 'lucide-react';
 import { pedidosService } from '../../services/pedidos';
 import type { Pedido } from '../../types/pedido';
 import { PedidoModal } from './PedidoModal';

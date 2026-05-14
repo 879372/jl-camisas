@@ -1,13 +1,13 @@
 import { useEffect, useState } from 'react';
 import { useForm, useFieldArray, useWatch } from 'react-hook-form';
 import { X, Plus, Trash2 } from 'lucide-react';
-import type { Pedido, PedidoItem } from '../../types/pedido';
+import type { Pedido } from '../../types/pedido';
 import type { Cliente } from '../../types/cliente';
 import type { Produto } from '../../types/produto';
 import { pedidosService } from '../../services/pedidos';
 import { clientesService } from '../../services/clientes';
 import { produtosService } from '../../services/produtos';
-import { formatCurrency, parseCurrency } from '../../utils/masks';
+import { formatCurrency } from '../../utils/masks';
 
 interface PedidoModalProps {
   isOpen: boolean;
@@ -18,7 +18,6 @@ interface PedidoModalProps {
 
 export function PedidoModal({ isOpen, onClose, onSave, pedidoToEdit }: PedidoModalProps) {
   const [clientes, setClientes] = useState<Cliente[]>([]);
-  const [produtos, setProdutos] = useState<Produto[]>([]);
   
   const { register, control, handleSubmit, reset, setValue, watch } = useForm<Partial<Pedido>>({
     defaultValues: {
@@ -42,12 +41,10 @@ export function PedidoModal({ isOpen, onClose, onSave, pedidoToEdit }: PedidoMod
     if (isOpen) {
       const loadData = async () => {
         try {
-          const [clientesData, produtosData] = await Promise.all([
-            clientesService.getAll(),
-            produtosService.getAll()
+          const [clientesData] = await Promise.all([
+            clientesService.getAll()
           ]);
           setClientes(clientesData.results || clientesData);
-          setProdutos(produtosData.results || produtosData);
         } catch (error) {
           console.error("Failed to load initial data for PedidoModal", error);
         }
@@ -83,7 +80,7 @@ export function PedidoModal({ isOpen, onClose, onSave, pedidoToEdit }: PedidoMod
     try {
       const payload = {
         ...data,
-        data_entrega_prevista: data.data_entrega_prevista || null
+        data_entrega_prevista: data.data_entrega_prevista || undefined
       };
 
       if (pedidoToEdit) {
