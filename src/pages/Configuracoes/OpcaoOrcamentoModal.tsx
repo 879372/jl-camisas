@@ -18,9 +18,9 @@ export default function OpcaoOrcamentoModal({ isOpen, onClose, onSave, opcaoToEd
   useEffect(() => {
     if (isOpen) {
       if (opcaoToEdit) {
-        const formData = { ...opcaoToEdit };
+        const formData = { ...opcaoToEdit } as any;
         if (formData.valor_adicional) {
-          formData.valor_adicional = formatCurrency(formData.valor_adicional);
+          formData.valor_adicional = formatCurrency(String(formData.valor_adicional));
         }
         reset(formData);
       } else {
@@ -41,7 +41,7 @@ export default function OpcaoOrcamentoModal({ isOpen, onClose, onSave, opcaoToEd
     try {
       const payload = { ...data };
       if (payload.valor_adicional) {
-        payload.valor_adicional = parseCurrency(payload.valor_adicional);
+        payload.valor_adicional = parseCurrency(payload.valor_adicional as string);
       }
 
       if (opcaoToEdit) {

@@ -20,11 +20,11 @@ export function ClienteModal({ isOpen, onClose, onSave, clienteToEdit }: Cliente
       Object.keys(clienteToEdit).forEach((key) => {
         let val = clienteToEdit[key as keyof Cliente] as unknown;
         if (val) {
-          if (key === 'cpf_cnpj') val = formatCpfCnpj(val);
-          if (key === 'telefone') val = formatTelefone(val);
-          if (key === 'cep') val = formatCEP(val);
+          if (key === 'cpf_cnpj') val = formatCpfCnpj(val as string);
+          if (key === 'telefone') val = formatTelefone(val as string);
+          if (key === 'cep') val = formatCEP(val as string);
         }
-        setValue(key as keyof Cliente, val);
+        setValue(key as keyof Cliente, val as any);
       });
     } else {
       reset({ tipo: 'fisica' });

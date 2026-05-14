@@ -20,9 +20,9 @@ export function ProdutoModal({ isOpen, onClose, onSave, produtoToEdit }: Produto
       Object.keys(produtoToEdit).forEach((key) => {
         let val = produtoToEdit[key as keyof Produto] as unknown;
         if (key === 'preco_base' && val !== undefined) {
-          val = formatCurrency(val);
+          val = formatCurrency(String(val));
         }
-        setValue(key as keyof Produto, val);
+        setValue(key as keyof Produto, val as any);
       });
     } else {
       reset({ ativo: true, preco_base: 0, unidade: 'un' });
