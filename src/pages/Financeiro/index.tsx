@@ -24,8 +24,8 @@ export default function Financeiro() {
   const [fixedType, setFixedType] = useState<'entrada' | 'saida' | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
 
-  const loadData = async () => {
-    setLoading(true);
+  const loadData = async (showLoading = true) => {
+    if (showLoading) setLoading(true);
     try {
       const [listData, summaryData] = await Promise.all([
         financeiroService.getAll(),
@@ -41,7 +41,8 @@ export default function Financeiro() {
   };
 
   useEffect(() => {
-    loadData();
+    const timer = setTimeout(() => loadData(false), 0);
+    return () => clearTimeout(timer);
   }, []);
 
   const openNewModal = (type: 'entrada' | 'saida') => {

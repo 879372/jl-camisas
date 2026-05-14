@@ -9,7 +9,7 @@ export interface PedidoItem {
   quantidade: number;
   valor_unitario: number;
   valor_total: number;
-  especificacoes?: any;
+  especificacoes?: Record<string, unknown>;
 }
 
 export interface Pedido {

@@ -30,7 +30,8 @@ export default function Clientes() {
   };
 
   useEffect(() => {
-    loadClientes();
+    const timer = setTimeout(() => loadClientes(), 0);
+    return () => clearTimeout(timer);
   }, []);
 
   const handleEdit = (cliente: Cliente) => {

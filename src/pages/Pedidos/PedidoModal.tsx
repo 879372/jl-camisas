@@ -3,10 +3,8 @@ import { useForm, useFieldArray, useWatch } from 'react-hook-form';
 import { X, Plus, Trash2 } from 'lucide-react';
 import type { Pedido } from '../../types/pedido';
 import type { Cliente } from '../../types/cliente';
-import type { Produto } from '../../types/produto';
 import { pedidosService } from '../../services/pedidos';
 import { clientesService } from '../../services/clientes';
-import { produtosService } from '../../services/produtos';
 import { formatCurrency } from '../../utils/masks';
 
 interface PedidoModalProps {

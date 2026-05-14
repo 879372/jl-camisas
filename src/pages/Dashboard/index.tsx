@@ -11,7 +11,7 @@ import {
 } from 'lucide-react';
 import { pedidosService } from '../../services/pedidos';
 import { formatCurrency } from '../../utils/masks';
-import type { Pedido } from '../../types/pedido';
+import type { Pedido, PedidoItem } from '../../types/pedido';
 
 export default function Dashboard() {
   const [stats, setStats] = useState({
@@ -24,12 +24,11 @@ export default function Dashboard() {
   const [proximasEntregas, setProximasEntregas] = useState<Pedido[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const loadDashboardData = async () => {
-    setLoading(true);
+  const loadDashboardData = async (showLoading = true) => {
+    if (showLoading) setLoading(true);
     try {
       const data = await pedidosService.getAll();
       const pedidosList: Pedido[] = data.results || data;
-      
       const newStats = {
         orcamento: { count: 0, total: 0 },
         aguardando: { count: 0, total: 0 },
@@ -40,7 +39,7 @@ export default function Dashboard() {
 
       pedidosList.forEach(p => {
         const val = Number(p.valor_total) || 0;
-        const itemsQty = p.itens?.reduce((acc: number, item: any) => acc + Number(item.quantidade), 0) || 0;
+        const itemsQty = p.itens?.reduce((acc: number, item: PedidoItem) => acc + Number(item.quantidade), 0) || 0;
         newStats.totalItens += itemsQty;
 
         if (p.status === 'orcamento') {
@@ -73,7 +72,8 @@ export default function Dashboard() {
   };
 
   useEffect(() => {
-    loadDashboardData();
+    const timer = setTimeout(() => loadDashboardData(false), 0);
+    return () => clearTimeout(timer);
   }, []);
 
   if (loading) {
@@ -163,7 +163,7 @@ export default function Dashboard() {
                           <div className="w-1 h-1 bg-slate-200 rounded-full" />
                           <Hash className="w-3 h-3 text-slate-300" />
                           <p className="text-[10px] font-bold text-blue-500 uppercase">
-                            {pedido.itens?.reduce((acc: number, i: any) => acc + Number(i.quantidade), 0) || 0} PEÇAS
+                            {pedido.itens?.reduce((acc: number, i: PedidoItem) => acc + Number(i.quantidade), 0) || 0} PEÇAS
                           </p>
                         </div>
                       </div>

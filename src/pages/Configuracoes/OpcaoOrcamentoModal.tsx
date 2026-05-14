@@ -2,13 +2,14 @@ import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { X } from 'lucide-react';
 import { createOrcamentoOpcao, updateOrcamentoOpcao } from '../../services/orcamento';
+import type { OrcamentoOpcao } from '../../types/orcamento';
 import { formatCurrency, parseCurrency } from '../../utils/masks';
 
 interface OpcaoOrcamentoModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: () => void;
-  opcaoToEdit: any | null;
+  opcaoToEdit: OrcamentoOpcao | null;
 }
 
 export default function OpcaoOrcamentoModal({ isOpen, onClose, onSave, opcaoToEdit }: OpcaoOrcamentoModalProps) {
@@ -36,7 +37,7 @@ export default function OpcaoOrcamentoModal({ isOpen, onClose, onSave, opcaoToEd
     }
   }, [opcaoToEdit, isOpen, reset]);
 
-  const onSubmit = async (data: any) => {
+  const onSubmit = async (data: Record<string, unknown>) => {
     try {
       const payload = { ...data };
       if (payload.valor_adicional) {

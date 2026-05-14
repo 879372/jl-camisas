@@ -26,9 +26,10 @@ export default function Login() {
       
       // Redireciona para o dashboard
       navigate('/dashboard');
-    } catch (err: any) {
+    } catch (err) {
+      const error = err as { response?: { data?: { detail?: string } } };
       setError(
-        err.response?.data?.detail || 
+        error.response?.data?.detail || 
         'Erro ao fazer login. Verifique suas credenciais.'
       );
     } finally {

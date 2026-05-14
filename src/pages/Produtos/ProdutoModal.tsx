@@ -18,7 +18,7 @@ export function ProdutoModal({ isOpen, onClose, onSave, produtoToEdit }: Produto
   useEffect(() => {
     if (produtoToEdit) {
       Object.keys(produtoToEdit).forEach((key) => {
-        let val = produtoToEdit[key as keyof Produto] as any;
+        let val = produtoToEdit[key as keyof Produto] as unknown;
         if (key === 'preco_base' && val !== undefined) {
           val = formatCurrency(val);
         }
@@ -95,7 +95,7 @@ export function ProdutoModal({ isOpen, onClose, onSave, produtoToEdit }: Produto
                 {...register('preco_base', { required: true })}
                 onChange={(e) => {
                   e.target.value = formatCurrency(e.target.value);
-                  setValue('preco_base', e.target.value as any);
+                  setValue('preco_base', e.target.value as unknown as number);
                 }}
                 className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
                 placeholder="R$ 0,00"

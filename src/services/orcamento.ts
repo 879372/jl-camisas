@@ -5,22 +5,22 @@ export const getOrcamentoConfig = async () => {
   return response.data;
 };
 
-export const updateOrcamentoConfig = async (id: number, data: any) => {
+export const updateOrcamentoConfig = async (id: number, data: Record<string, unknown>) => {
   const response = await api.patch(`/api/v1/orcamento-publico/config/${id}/`, data);
   return response.data;
 };
 
-export const getOrcamentoOpcoes = async (params?: any) => {
+export const getOrcamentoOpcoes = async (params?: Record<string, unknown>) => {
   const response = await api.get('/api/v1/orcamento-publico/opcoes/', { params });
   return response.data;
 };
 
-export const createOrcamentoOpcao = async (data: any) => {
+export const createOrcamentoOpcao = async (data: Record<string, unknown>) => {
   const response = await api.post('/api/v1/orcamento-publico/opcoes/', data);
   return response.data;
 };
 
-export const updateOrcamentoOpcao = async (id: number, data: any) => {
+export const updateOrcamentoOpcao = async (id: number, data: Record<string, unknown>) => {
   const response = await api.patch(`/api/v1/orcamento-publico/opcoes/${id}/`, data);
   return response.data;
 };
@@ -30,7 +30,7 @@ export const deleteOrcamentoOpcao = async (id: number) => {
   return response.data;
 };
 
-export const criarPedidoPublico = async (data: any) => {
+export const criarPedidoPublico = async (data: Record<string, unknown>) => {
   const response = await api.post('/api/v1/orcamento-publico/criar-pedido/', data);
   return response.data;
 };

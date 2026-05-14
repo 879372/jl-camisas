@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { getOrcamentoConfig, getOrcamentoOpcoes, criarPedidoPublico } from '../../services/orcamento';
 import './orcamento.css';
+import type { OrcamentoOpcao } from '../../types/orcamento';
 
 interface OrcamentoData {
   nome: string;
@@ -53,7 +54,7 @@ const Orcamento: React.FC = () => {
   });
 
   const opcoes = useMemo(() => {
-    const map: Record<string, any[]> = {
+    const map: Record<string, OrcamentoOpcao[]> = {
       quantidade: [],
       prazo: [],
       modelo: [],
@@ -61,7 +62,7 @@ const Orcamento: React.FC = () => {
       tecido: [],
       adicional: [],
     };
-    opcoesRaw?.forEach((opt: any) => {
+    opcoesRaw?.forEach((opt: OrcamentoOpcao) => {
       if (map[opt.categoria]) map[opt.categoria].push(opt);
     });
     return map;
@@ -90,7 +91,7 @@ const Orcamento: React.FC = () => {
     }
   };
 
-  const updateField = (field: keyof OrcamentoData, value: any) => {
+  const updateField = (field: keyof OrcamentoData, value: string | number | string[]) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
@@ -117,7 +118,7 @@ const Orcamento: React.FC = () => {
     ];
 
     selectedOptions.forEach(opt => {
-      total += parseFloat(opt.valor_adicional || '0');
+      total += Number(opt.valor_adicional || 0);
     });
 
     return total;
@@ -220,8 +221,8 @@ const Orcamento: React.FC = () => {
                     }`} />
                 )}
                 <div className={`w-7 h-7 rounded-2xl flex items-center justify-center border-2 transition-all duration-500 relative z-10 ${isActive ? 'bg-yellow-500 border-yellow-500 text-white scale-110 step-indicator-active' :
-                    isCompleted ? 'bg-yellow-500 border-yellow-500 text-white' :
-                      'bg-slate-800 border-slate-700 text-slate-500'
+                  isCompleted ? 'bg-yellow-500 border-yellow-500 text-white' :
+                    'bg-slate-800 border-slate-700 text-slate-500'
                   }`}>
                   {isCompleted ? <Check className="w-6 h-6" /> : <Icon className="w-5 h-5" />}
                 </div>
@@ -468,7 +469,7 @@ const Orcamento: React.FC = () => {
                     <span className="font-black text-white text-sm md:text-base uppercase italic">{opt.label}</span>
                   </div>
                   <span className="text-yellow-500 font-black text-sm">
-                    {opt.valor_adicional > 0 ? `+R$ ${parseFloat(opt.valor_adicional).toFixed(0)}` : 'Grátis'}
+                    {opt.valor_adicional > 0 ? `+R$ ${Number(opt.valor_adicional).toFixed(0)}` : 'Grátis'}
                   </span>
                 </button>
               ))}

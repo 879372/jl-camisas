@@ -11,12 +11,13 @@ import {
   deleteOrcamentoOpcao 
 } from '../../services/orcamento';
 import { formatCurrency, parseCurrency } from '../../utils/masks';
+import type { OrcamentoOpcao } from '../../types/orcamento';
 import OpcaoOrcamentoModal from './OpcaoOrcamentoModal';
 
 export default function OrcamentoConfigPage() {
   const queryClient = useQueryClient();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [opcaoToEdit, setOpcaoToEdit] = useState<any | null>(null);
+  const [opcaoToEdit, setOpcaoToEdit] = useState<OrcamentoOpcao | null>(null);
   
   const { data: config, isLoading: loadingConfig } = useQuery({
     queryKey: ['orcamento-config'],
@@ -35,7 +36,7 @@ export default function OrcamentoConfigPage() {
   });
 
   const configMutation = useMutation({
-    mutationFn: (data: any) => updateOrcamentoConfig(config.id, data),
+    mutationFn: (data: Record<string, unknown>) => updateOrcamentoConfig(config.id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['orcamento-config'] });
       alert('Configuração atualizada!');
@@ -59,7 +60,7 @@ export default function OrcamentoConfigPage() {
     configMutation.mutate(data);
   };
 
-  const openEditModal = (opcao: any) => {
+  const openEditModal = (opcao: OrcamentoOpcao) => {
     setOpcaoToEdit(opcao);
     setIsModalOpen(true);
   };
@@ -162,7 +163,7 @@ export default function OrcamentoConfigPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
-                  {opcoes?.map((opcao: any) => (
+                  {opcoes?.map((opcao: OrcamentoOpcao) => (
                     <tr key={opcao.id} className="hover:bg-slate-50/50 transition-colors">
                       <td className="px-6 py-4">
                         <span className="px-2 py-1 bg-blue-50 text-blue-600 rounded-md text-[10px] font-black uppercase">

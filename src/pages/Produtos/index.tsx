@@ -12,8 +12,8 @@ export default function Produtos() {
   const [produtoToEdit, setProdutoToEdit] = useState<Produto | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
 
-  const loadProdutos = async () => {
-    setLoading(true);
+  const loadProdutos = async (showLoading = true) => {
+    if (showLoading) setLoading(true);
     try {
       const data = await produtosService.getAll();
       if (data.results) {
@@ -29,7 +29,8 @@ export default function Produtos() {
   };
 
   useEffect(() => {
-    loadProdutos();
+    const timer = setTimeout(() => loadProdutos(false), 0);
+    return () => clearTimeout(timer);
   }, []);
 
   const handleEdit = (produto: Produto) => {

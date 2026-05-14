@@ -18,7 +18,7 @@ export function ClienteModal({ isOpen, onClose, onSave, clienteToEdit }: Cliente
   useEffect(() => {
     if (clienteToEdit) {
       Object.keys(clienteToEdit).forEach((key) => {
-        let val = clienteToEdit[key as keyof Cliente] as any;
+        let val = clienteToEdit[key as keyof Cliente] as unknown;
         if (val) {
           if (key === 'cpf_cnpj') val = formatCpfCnpj(val);
           if (key === 'telefone') val = formatTelefone(val);

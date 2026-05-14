@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Plus, Search, MoreVertical, Calendar, User, ArrowRight, Maximize2, Hash } from 'lucide-react';
 import { pedidosService } from '../../services/pedidos';
-import type { Pedido } from '../../types/pedido';
+import type { Pedido, PedidoItem } from '../../types/pedido';
 import { PedidoModal } from './PedidoModal';
 import { formatCurrency } from '../../utils/masks';
 
@@ -20,8 +20,8 @@ export default function Pedidos() {
   const [pedidoToEdit, setPedidoToEdit] = useState<Pedido | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
 
-  const loadPedidos = async () => {
-    setLoading(true);
+  const loadPedidos = async (showLoading = true) => {
+    if (showLoading) setLoading(true);
     try {
       const data = await pedidosService.getAll();
       setPedidos(data.results || data);
@@ -33,7 +33,8 @@ export default function Pedidos() {
   };
 
   useEffect(() => {
-    loadPedidos();
+    const timer = setTimeout(() => loadPedidos(false), 0);
+    return () => clearTimeout(timer);
   }, []);
 
   const handleUpdateStatus = async (id: number, newStatus: string) => {
@@ -167,7 +168,7 @@ export default function Pedidos() {
                           <div className="flex items-center gap-1.5 text-slate-600">
                             <Hash className="w-3 h-3 text-blue-500" />
                             <span className="text-[10px] font-black">
-                              {pedido.itens?.reduce((acc: number, i: any) => acc + Number(i.quantidade), 0) || 0} unid.
+                               {pedido.itens?.reduce((acc: number, i: PedidoItem) => acc + Number(i.quantidade), 0) || 0} unid.
                             </span>
                           </div>
                         </div>
