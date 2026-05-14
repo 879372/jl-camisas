@@ -199,10 +199,9 @@ const Orcamento: React.FC = () => {
             />
           </div>
           <h1 className="text-xl md:text-2xl font-bold tracking-tight text-white uppercase italic">
-            JL <span className="text-yellow-500">Camisas</span>
+            JL <span className="text-yellow-500">Arte Camisas</span>
           </h1>
           <div className="h-1 w-24 bg-yellow-500 mx-auto mt-2 rounded-full" />
-          <p className="mt-4 text-xs md:text-sm font-bold tracking-[0.3em] uppercase text-slate-400">Excellence in Custom Uniforms</p>
         </div>
       </header>
 
@@ -264,7 +263,7 @@ const Orcamento: React.FC = () => {
               </div>
               <div className="flex-1">
                 <h2 className="text-xl md:text-2xl font-bold text-white leading-tight">VAMOS DAR <span className="text-yellow-500">VIDA</span> À SUA IDEIA?</h2>
-                <p className="mt-2 text-slate-400 font-medium">Inicie seu projeto exclusivo com a JL Camisas preenchendo os dados abaixo.</p>
+                <p className="mt-2 text-slate-400 font-medium">Inicie seu projeto exclusivo com a JL Arte Camisas preenchendo os dados abaixo.</p>
               </div>
             </div>
 
@@ -568,16 +567,16 @@ const Orcamento: React.FC = () => {
       {/* Corporate Footer */}
       <footer className="relative z-10 mt-10 w-full max-w-5xl grid grid-cols-1 md:grid-cols-3 gap-8 text-center md:text-left pb-12 opacity-50">
         <div className="space-y-2">
-          <p className="text-[10px] font-bold text-white uppercase tracking-widest">Sede Corporativa</p>
-          <p className="text-xs text-slate-400">Av. Bacharel Tomaz Landim, 3010<br />Natal, RN - 59104-212</p>
+          <p className="text-[10px] font-bold text-white uppercase tracking-widest">Endereço</p>
+          <p className="text-xs text-slate-400">R. Monte Gerezim, 171 - CENTRAL PARK 1<br />Extremoz - RN, 59575-000</p>
         </div>
         <div className="space-y-2 text-center">
-          <p className="text-[10px] font-bold text-white uppercase tracking-widest">Horário Prime</p>
-          <p className="text-xs text-slate-400">Segunda à Sexta: 08h às 18h<br />Sábado: Sob Agendamento</p>
+          <p className="text-[10px] font-bold text-white uppercase tracking-widest">Horário</p>
+          <p className="text-xs text-slate-400">Segunda à Sexta: 08:00 – 18:00<br />Sábado: 08:00 – 17:00 | Domingo: Fechado</p>
         </div>
         <div className="space-y-2 text-right hidden md:block">
-          <p className="text-[10px] font-bold text-white uppercase tracking-widest">Contact Center</p>
-          <p className="text-xs text-slate-400">(84) 3662-2554<br />suporte@jlcamisas.com.br</p>
+          <p className="text-[10px] font-bold text-white uppercase tracking-widest">Contato</p>
+          <p className="text-xs text-slate-400">(84) 98617-2153<br />contato@jlartecamisas.com.br</p>
         </div>
       </footer>
     </div>
