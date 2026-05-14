@@ -180,7 +180,7 @@ const Orcamento: React.FC = () => {
   }
 
   return (
-    <div className="orcamento-page flex flex-col items-center py-4 md:py-8 px-4 selection:bg-yellow-500/30">
+    <div className="orcamento-page flex flex-col items-center min-h-screen py-4 md:py-8 px-4 selection:bg-yellow-500/30">
 
       {/* Dynamic Background Effect */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none opacity-20">
@@ -256,8 +256,8 @@ const Orcamento: React.FC = () => {
       <main className="relative z-10 w-full max-w-4xl glass-card rounded-2xl md:rounded-xl p-5 md:p-8 animate-step" style={{ animationDelay: '0.4s' }}>
 
         {currentStep === 1 && (
-          <div className="space-y-6 text-center md:text-left">
-            <div className="flex flex-col md:flex-row items-center md:items-end gap-4">
+          <div className="space-y-6 text-left">
+            <div className="flex flex-col md:flex-row items-start md:items-end gap-4">
               <div className="w-14 h-14 bg-yellow-500/10 rounded-2xl flex items-center justify-center text-yellow-500">
                 <User className="w-7 h-7" />
               </div>
@@ -574,7 +574,7 @@ const Orcamento: React.FC = () => {
           <p className="text-[10px] font-bold text-white uppercase tracking-widest">Horário</p>
           <p className="text-xs text-slate-400">Segunda à Sexta: 08:00 – 18:00<br />Sábado: 08:00 – 17:00 | Domingo: Fechado</p>
         </div>
-        <div className="space-y-2 text-right hidden md:block">
+        <div className="space-y-2 text-center md:text-right">
           <p className="text-[10px] font-bold text-white uppercase tracking-widest">Contato</p>
           <p className="text-xs text-slate-400">(84) 98617-2153<br />contato@jlartecamisas.com.br</p>
         </div>
