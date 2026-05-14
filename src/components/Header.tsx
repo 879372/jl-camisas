@@ -1,6 +1,15 @@
-import { Bell, Search } from 'lucide-react';
+import { Bell, Search, LogOut } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 export default function Header() {
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
+    navigate('/login');
+  };
+
   return (
     <header className="h-16 flex-shrink-0 border-b border-slate-200 bg-white/80 backdrop-blur-md sticky top-0 z-10">
       <div className="flex h-full items-center justify-between px-6 lg:px-8">
@@ -32,15 +41,25 @@ export default function Header() {
           <div className="h-8 w-px bg-slate-200 mx-1"></div>
           
           {/* User Profile */}
-          <button className="flex items-center gap-3 hover:opacity-80 transition-opacity">
-            <div className="flex flex-col text-right">
-              <span className="text-sm font-medium text-slate-700 leading-tight">Admin JL</span>
-              <span className="text-xs text-slate-500">Administrador</span>
-            </div>
-            <div className="h-9 w-9 rounded-full bg-gradient-to-tr from-blue-100 to-blue-200 flex items-center justify-center text-blue-700 font-bold border border-blue-300">
-              AD
-            </div>
-          </button>
+          <div className="flex items-center gap-4">
+            <button className="flex items-center gap-3 hover:opacity-80 transition-opacity">
+              <div className="flex flex-col text-right">
+                <span className="text-sm font-medium text-slate-700 leading-tight">Admin JL</span>
+                <span className="text-xs text-slate-500">Administrador</span>
+              </div>
+              <div className="h-9 w-9 rounded-full bg-gradient-to-tr from-blue-100 to-blue-200 flex items-center justify-center text-blue-700 font-bold border border-blue-300">
+                AD
+              </div>
+            </button>
+
+            <button 
+              onClick={handleLogout}
+              className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all group"
+              title="Sair do Sistema"
+            >
+              <LogOut size={20} className="group-hover:scale-110 transition-transform" />
+            </button>
+          </div>
         </div>
 
       </div>

@@ -15,6 +15,7 @@ export default function Sidebar() {
     { name: 'Clientes', path: '/clientes', icon: <Users size={20} /> },
     { name: 'Produtos', path: '/produtos', icon: <Package size={20} /> },
     { name: 'Financeiro', path: '/financeiro', icon: <Wallet size={20} /> },
+    { name: 'Config. Orçamento', path: '/config-orcamento', icon: <Settings size={20} /> },
   ];
 
   return (

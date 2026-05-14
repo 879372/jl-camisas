@@ -1,0 +1,106 @@
+/* Orcamento Premium Design System */
+
+:root {
+  --orc-primary: #eab308; /* Yellow 500 */
+  --orc-primary-dark: #ca8a04; /* Yellow 600 */
+  --orc-bg: #0f172a; /* Deep Navy/Slate */
+  --orc-card-bg: rgba(255, 255, 255, 0.03);
+  --orc-border: rgba(255, 255, 255, 0.1);
+  --orc-text: #f8fafc;
+  --orc-text-muted: #94a3b8;
+}
+
+.orcamento-page {
+  background: radial-gradient(circle at top right, #1e293b, #0f172a);
+  color: var(--orc-text);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+.glass-card {
+  background: rgba(30, 41, 59, 0.7);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--orc-border);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+.step-indicator-active {
+  box-shadow: 0 0 20px rgba(234, 179, 8, 0.4);
+}
+
+/* Animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-step {
+  animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Custom Scrollbar */
+.orcamento-page ::-webkit-scrollbar {
+  width: 6px;
+}
+
+.orcamento-page ::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.orcamento-page ::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+}
+
+/* Option Card Hover */
+.option-card {
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.option-card:hover {
+  transform: translateY(-4px) scale(1.02);
+  border-color: var(--orc-primary);
+  background: rgba(234, 179, 8, 0.05);
+}
+
+.option-card-selected {
+  background: linear-gradient(135deg, rgba(234, 179, 8, 0.1), rgba(234, 179, 8, 0.05)) !important;
+  border-color: var(--orc-primary) !important;
+  box-shadow: 0 0 20px rgba(234, 179, 8, 0.15);
+}
+
+/* Buttons */
+.btn-primary {
+  background: linear-gradient(135deg, var(--orc-primary), var(--orc-primary-dark));
+  box-shadow: 0 10px 20px -5px rgba(234, 179, 8, 0.3);
+  transition: all 0.3s ease;
+  color: #000; /* Yellow button needs black text for contrast */
+  font-weight: 800;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 15px 25px -5px rgba(234, 179, 8, 0.4);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+/* Progress Bar (Mobile) */
+.progress-container {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--orc-border);
+}
+
+.progress-fill {
+  background: linear-gradient(to right, #eab308, #fef08a);
+  box-shadow: 0 0 10px rgba(234, 179, 8, 0.5);
+}

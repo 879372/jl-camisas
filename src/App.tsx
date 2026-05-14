@@ -6,12 +6,14 @@ import Pedidos from './pages/Pedidos';
 import Clientes from './pages/Clientes';
 import Financeiro from './pages/Financeiro';
 import Produtos from './pages/Produtos';
-
+import Orcamento from './pages/Public/Orcamento';
+import OrcamentoConfigPage from './pages/Configuracoes';
 function App() {
   return (
     <Router>
       <Routes>
         <Route path="/login" element={<Login />} />
+        <Route path="/orcamento" element={<Orcamento />} />
         
         <Route path="/" element={<Layout />}>
           <Route index element={<Navigate to="/dashboard" replace />} />
@@ -20,6 +22,7 @@ function App() {
           <Route path="clientes" element={<Clientes />} />
           <Route path="produtos" element={<Produtos />} />
           <Route path="financeiro" element={<Financeiro />} />
+          <Route path="config-orcamento" element={<OrcamentoConfigPage />} />
         </Route>
       </Routes>
     </Router>
