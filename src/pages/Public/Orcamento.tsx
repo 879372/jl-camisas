@@ -68,16 +68,24 @@ const Orcamento: React.FC = () => {
     return map;
   }, [opcoesRaw]);
 
-  const [formData, setFormData] = useState<OrcamentoData>({
-    nome: '',
-    whatsapp: '',
-    quantidade: '',
-    prazo: '',
-    modelo: '',
-    estampa: '',
-    tecido: '',
-    adicionais: [],
+  const [formData, setFormData] = useState<OrcamentoData>(() => {
+    const saved = localStorage.getItem('orcamento_draft');
+    return saved ? JSON.parse(saved) : {
+      nome: '',
+      whatsapp: '',
+      quantidade: '',
+      prazo: '',
+      modelo: '',
+      estampa: '',
+      tecido: '',
+      adicionais: [],
+    };
   });
+
+  // Persist form data on change
+  React.useEffect(() => {
+    localStorage.setItem('orcamento_draft', JSON.stringify(formData));
+  }, [formData]);
 
   const nextStep = () => {
     if (currentStep < 8) {
@@ -135,11 +143,12 @@ const Orcamento: React.FC = () => {
         ...formData,
         valor_total: valorTotal
       };
-      await criarPedidoPublico(payload);
+      const response = await criarPedidoPublico(payload);
+      const numeroPedido = response.pedido; // Vem do backend: ORC-XXXXX
 
       // 2. Prepara a mensagem do WhatsApp
-      let message = config?.mensagem_template || "Olá, meu nome é {nome} e realizei um orçamento pelo site.";
-      message = message.replace('{nome}', formData.nome);
+      let message = config?.mensagem_template || "Olá, meu nome é {nome} e acabei de realizar o orçamento #{pedido} pelo site.";
+      message = message.replace('{nome}', formData.nome).replace('{pedido}', numeroPedido);
 
       const detailText = `
 *Detalhes do Pedido:*
@@ -160,6 +169,9 @@ const Orcamento: React.FC = () => {
       const finalNumber = `55${cleanNumber}`;
 
       const whatsappUrl = `https://wa.me/${finalNumber}?text=${encodedMessage}`;
+
+      // Limpar rascunho após sucesso
+      localStorage.removeItem('orcamento_draft');
 
       // Abrir o WhatsApp
       window.location.href = whatsappUrl; // Usa href em vez de window.open para evitar bloqueio de popup após req async
