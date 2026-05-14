@@ -317,10 +317,10 @@ const Orcamento: React.FC = () => {
                 <button
                   key={opt.id}
                   onClick={() => updateField('quantidade', opt.label)}
-                  className={`option-card p-4 md:p-5 rounded-2xl border-2 text-left transition-all ${formData.quantidade === opt.label ? 'option-card-selected' : 'bg-slate-800/30 border-slate-700'
+                  className={`option-card p-4 md:p-5 rounded-2xl border-2 text-left transition-all flex items-center gap-4 ${formData.quantidade === opt.label ? 'option-card-selected' : 'bg-slate-800/30 border-slate-700'
                     }`}
                 >
-                  <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center mb-4 ${formData.quantidade === opt.label ? 'bg-yellow-500 border-yellow-500' : 'border-slate-600'
+                  <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 ${formData.quantidade === opt.label ? 'bg-yellow-500 border-yellow-500' : 'border-slate-600'
                     }`}>
                     {formData.quantidade === opt.label && <Check className="w-4 h-4 text-white" />}
                   </div>
@@ -353,10 +353,10 @@ const Orcamento: React.FC = () => {
                 <button
                   key={opt.id}
                   onClick={() => updateField('prazo', opt.label)}
-                  className={`option-card p-4 md:p-5 rounded-2xl border-2 text-left transition-all ${formData.prazo === opt.label ? 'option-card-selected' : 'bg-slate-800/30 border-slate-700'
+                  className={`option-card p-4 md:p-5 rounded-2xl border-2 text-left transition-all flex items-center gap-4 ${formData.prazo === opt.label ? 'option-card-selected' : 'bg-slate-800/30 border-slate-700'
                     }`}
                 >
-                  <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center mb-4 ${formData.prazo === opt.label ? 'bg-yellow-500 border-yellow-500' : 'border-slate-600'
+                  <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 ${formData.prazo === opt.label ? 'bg-yellow-500 border-yellow-500' : 'border-slate-600'
                     }`}>
                     {formData.prazo === opt.label && <Check className="w-4 h-4 text-white" />}
                   </div>
