@@ -88,6 +88,17 @@ const Orcamento: React.FC = () => {
   }, [formData]);
 
   const nextStep = () => {
+    // Validações por passo
+    if (currentStep === 1) {
+      if (!formData.nome.trim()) return alert("Por favor, informe seu nome.");
+      if (formData.whatsapp.replace(/\D/g, '').length < 10) return alert("Por favor, informe um WhatsApp válido.");
+    }
+    if (currentStep === 2 && !formData.quantidade) return alert("Por favor, selecione a quantidade.");
+    if (currentStep === 3 && !formData.prazo) return alert("Por favor, selecione o prazo.");
+    if (currentStep === 4 && !formData.modelo) return alert("Por favor, selecione o modelo.");
+    if (currentStep === 5 && !formData.estampa) return alert("Por favor, selecione a estampa.");
+    if (currentStep === 6 && !formData.tecido) return alert("Por favor, selecione o tecido.");
+
     if (currentStep < 8) {
       setSearchParams({ orcamento_id: orcamentoId, aba: (currentStep + 1).toString() });
     }
