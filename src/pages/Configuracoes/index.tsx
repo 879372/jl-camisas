@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { 
-  Plus, Edit2, Trash2, Settings, MessageSquare, 
-  DollarSign, CheckCircle, XCircle, Phone
+import {
+  Plus, Edit2, Trash2, Settings, MessageSquare,
+  DollarSign, CheckCircle, XCircle, Phone, Search, Filter
 } from 'lucide-react';
-import { 
-  getOrcamentoConfig, 
-  updateOrcamentoConfig, 
-  getOrcamentoOpcoes, 
-  deleteOrcamentoOpcao 
+import {
+  getOrcamentoConfig,
+  updateOrcamentoConfig,
+  getOrcamentoOpcoes,
+  deleteOrcamentoOpcao
 } from '../../services/orcamento';
 import { formatCurrency, parseCurrency } from '../../utils/masks';
 import type { OrcamentoOpcao } from '../../types/orcamento';
@@ -18,7 +18,18 @@ export default function OrcamentoConfigPage() {
   const queryClient = useQueryClient();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [opcaoToEdit, setOpcaoToEdit] = useState<OrcamentoOpcao | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState('');
   
+  const categories = [
+    { value: 'quantidade', label: 'Quantidade' },
+    { value: 'prazo', label: 'Prazo' },
+    { value: 'modelo', label: 'Modelo' },
+    { value: 'estampa', label: 'Estampa' },
+    { value: 'tecido', label: 'Tecido' },
+    { value: 'adicional', label: 'Adicional' },
+  ];
+
   const { data: config, isLoading: loadingConfig } = useQuery({
     queryKey: ['orcamento-config'],
     queryFn: async () => {
@@ -34,6 +45,15 @@ export default function OrcamentoConfigPage() {
       return data.results || [];
     }
   });
+
+  const filteredOpcoes = React.useMemo(() => {
+    if (!opcoes) return [];
+    return opcoes.filter((opt: OrcamentoOpcao) => {
+      const matchesSearch = opt.label.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesCategory = !categoryFilter || opt.categoria === categoryFilter;
+      return matchesSearch && matchesCategory;
+    });
+  }, [opcoes, searchTerm, categoryFilter]);
 
   const configMutation = useMutation({
     mutationFn: (data: Record<string, unknown>) => updateOrcamentoConfig(config.id, data),
@@ -80,7 +100,7 @@ export default function OrcamentoConfigPage() {
   if (loadingConfig || loadingOpcoes) return <div className="p-8">Carregando...</div>;
 
   return (
-    <div className="p-8 space-y-8 animate-in fade-in duration-500">
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex justify-between items-end">
         <div>
           <h1 className="text-2xl font-bold text-slate-800">Configuração do Orçamento Público</h1>
@@ -96,7 +116,7 @@ export default function OrcamentoConfigPage() {
               <Settings className="w-5 h-5 text-blue-500" />
               Configurações Gerais
             </div>
-            
+
             <form onSubmit={handleUpdateConfig} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">WhatsApp de Destino (Gráfica)</label>
@@ -166,6 +186,32 @@ export default function OrcamentoConfigPage() {
               </button>
             </div>
 
+            <div className="p-4 bg-slate-50 border-b border-slate-100 flex flex-col md:flex-row gap-4">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <input
+                  type="text"
+                  placeholder="Pesquisar por nome..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                />
+              </div>
+              <div className="relative w-full md:w-48">
+                <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <select
+                  value={categoryFilter}
+                  onChange={(e) => setCategoryFilter(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 text-sm appearance-none"
+                >
+                  <option value="">Todas Categorias</option>
+                  {categories.map(cat => (
+                    <option key={cat.value} value={cat.value}>{cat.label}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
             <div className="overflow-x-auto">
               <table className="w-full text-left">
                 <thead className="bg-slate-50 text-slate-500 text-xs font-bold uppercase tracking-wider">
@@ -178,7 +224,7 @@ export default function OrcamentoConfigPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
-                  {opcoes?.map((opcao: OrcamentoOpcao) => (
+                  {filteredOpcoes?.map((opcao: OrcamentoOpcao) => (
                     <tr key={opcao.id} className="hover:bg-slate-50/50 transition-colors">
                       <td className="px-6 py-4">
                         <span className="px-2 py-1 bg-blue-50 text-blue-600 rounded-md text-[10px] font-black uppercase">
