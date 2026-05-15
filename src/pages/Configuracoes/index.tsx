@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { 
   Plus, Edit2, Trash2, Settings, MessageSquare, 
-  DollarSign, CheckCircle, XCircle 
+  DollarSign, CheckCircle, XCircle, Phone
 } from 'lucide-react';
 import { 
   getOrcamentoConfig, 
@@ -56,6 +56,7 @@ export default function OrcamentoConfigPage() {
     const data = {
       valor_base: parseCurrency(formData.get('valor_base') as string),
       mensagem_template: formData.get('mensagem_template'),
+      whatsapp_destino: formData.get('whatsapp_destino'),
     };
     configMutation.mutate(data);
   };
@@ -98,6 +99,20 @@ export default function OrcamentoConfigPage() {
             
             <form onSubmit={handleUpdateConfig} className="space-y-4">
               <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">WhatsApp de Destino (Gráfica)</label>
+                <div className="relative">
+                  <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <input
+                    name="whatsapp_destino"
+                    defaultValue={config?.whatsapp_destino}
+                    placeholder="Ex: 5584999999999"
+                    className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <p className="text-[10px] text-slate-400 mt-1">Inclua o 55 e o DDD.</p>
+              </div>
+
+              <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">Valor Base (R$)</label>
                 <div className="relative">
                   <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
@@ -121,7 +136,7 @@ export default function OrcamentoConfigPage() {
                     className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500"
                   ></textarea>
                 </div>
-                <p className="text-[10px] text-slate-400 mt-1">Use {'{nome}'} como placeholder.</p>
+                <p className="text-[10px] text-slate-400 mt-1">Use {'{nome}'} e {'{pedido}'} como placeholders.</p>
               </div>
 
               <button
