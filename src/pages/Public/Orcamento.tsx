@@ -34,16 +34,23 @@ const steps = [
 const Orcamento: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
 
-  // Restore step from localStorage if URL param is missing (e.g. after refresh)
+  // Only trust saved step if there's actually a draft — otherwise start fresh
+  const hasDraft = !!localStorage.getItem('orcamento_draft');
   const urlAba = searchParams.get('aba');
   const savedAba = localStorage.getItem('orcamento_step');
-  const currentStep = parseInt(urlAba || savedAba || '1');
+  const currentStep = hasDraft ? parseInt(urlAba || savedAba || '1') : 1;
   const orcamentoId = searchParams.get('orcamento_id') || '16008';
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Sync current step into URL if it was restored from localStorage
+  // On mount: restore step into URL if needed, or clear stale URL params if no draft
   React.useEffect(() => {
-    if (!urlAba && savedAba && savedAba !== '1') {
+    if (!hasDraft) {
+      // No draft — clear URL and localStorage to guarantee a clean start
+      localStorage.removeItem('orcamento_step');
+      if (urlAba && urlAba !== '1') {
+        setSearchParams({}, { replace: true });
+      }
+    } else if (!urlAba && savedAba && savedAba !== '1') {
       setSearchParams({ orcamento_id: orcamentoId, aba: savedAba }, { replace: true });
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
