@@ -33,9 +33,21 @@ const steps = [
 
 const Orcamento: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const currentStep = parseInt(searchParams.get('aba') || '1');
+
+  // Restore step from localStorage if URL param is missing (e.g. after refresh)
+  const urlAba = searchParams.get('aba');
+  const savedAba = localStorage.getItem('orcamento_step');
+  const currentStep = parseInt(urlAba || savedAba || '1');
   const orcamentoId = searchParams.get('orcamento_id') || '16008';
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Sync current step into URL if it was restored from localStorage
+  React.useEffect(() => {
+    if (!urlAba && savedAba && savedAba !== '1') {
+      setSearchParams({ orcamento_id: orcamentoId, aba: savedAba }, { replace: true });
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const { data: config } = useQuery({
     queryKey: ['orcamento-public-config'],
@@ -82,10 +94,14 @@ const Orcamento: React.FC = () => {
     };
   });
 
-  // Persist form data on change
+  // Persist form data AND current step on change
   React.useEffect(() => {
     localStorage.setItem('orcamento_draft', JSON.stringify(formData));
   }, [formData]);
+
+  React.useEffect(() => {
+    localStorage.setItem('orcamento_step', String(currentStep));
+  }, [currentStep]);
 
   const canProceed = (() => {
     if (currentStep === 1) return formData.nome.trim().length > 0 && formData.whatsapp.replace(/\D/g, '').length >= 10;
@@ -183,6 +199,7 @@ const Orcamento: React.FC = () => {
 
       // Limpar rascunho após sucesso
       localStorage.removeItem('orcamento_draft');
+      localStorage.removeItem('orcamento_step');
 
       // Abrir o WhatsApp
       window.location.href = whatsappUrl; // Usa href em vez de window.open para evitar bloqueio de popup após req async
