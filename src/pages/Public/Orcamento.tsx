@@ -190,17 +190,16 @@ const Orcamento: React.FC = () => {
 • *Modelo:* ${formData.modelo}
 • *Estampa:* ${formData.estampa}
 • *Malha:* ${formData.tecido}
-• *Adicionais:* ${formData.adicionais.join(' | ') || 'Nenhum'} | Valor unitário: R$ ${valorTotal.toFixed(2).replace('.', ',')}
+• *Adicionais:* ${formData.adicionais.join(' | ') || 'Nenhum'}
+• *Valor unitário estimado:* R$ ${valorTotal.toFixed(2).replace('.', ',')}
 • *Prazo de Entrega:* ${formData.prazo}`;
 
       const fullMessage = message + detailText;
       const encodedMessage = encodeURIComponent(fullMessage);
 
-      // Limpa o número do cliente (remove (), -, espaços)
-      const cleanNumber = formData.whatsapp.replace(/\D/g, '');
-
-      // Adiciona o código do país (55) para o link do WhatsApp
-      const finalNumber = `55${cleanNumber}`;
+      // Número da GRÁFICA (destino da mensagem)
+      const numeroGrafica = (config?.whatsapp_destino || '5584986172153').replace(/\D/g, '');
+      const finalNumber = numeroGrafica.startsWith('55') ? numeroGrafica : `55${numeroGrafica}`;
 
       const whatsappUrl = `https://wa.me/${finalNumber}?text=${encodedMessage}`;
 
