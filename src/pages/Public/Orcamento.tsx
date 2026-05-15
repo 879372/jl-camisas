@@ -87,18 +87,18 @@ const Orcamento: React.FC = () => {
     localStorage.setItem('orcamento_draft', JSON.stringify(formData));
   }, [formData]);
 
-  const nextStep = () => {
-    // Validações por passo
-    if (currentStep === 1) {
-      if (!formData.nome.trim()) return alert("Por favor, informe seu nome.");
-      if (formData.whatsapp.replace(/\D/g, '').length < 10) return alert("Por favor, informe um WhatsApp válido.");
-    }
-    if (currentStep === 2 && !formData.quantidade) return alert("Por favor, selecione a quantidade.");
-    if (currentStep === 3 && !formData.prazo) return alert("Por favor, selecione o prazo.");
-    if (currentStep === 4 && !formData.modelo) return alert("Por favor, selecione o modelo.");
-    if (currentStep === 5 && !formData.estampa) return alert("Por favor, selecione a estampa.");
-    if (currentStep === 6 && !formData.tecido) return alert("Por favor, selecione o tecido.");
+  const canProceed = (() => {
+    if (currentStep === 1) return formData.nome.trim().length > 0 && formData.whatsapp.replace(/\D/g, '').length >= 10;
+    if (currentStep === 2) return !!formData.quantidade;
+    if (currentStep === 3) return !!formData.prazo;
+    if (currentStep === 4) return !!formData.modelo;
+    if (currentStep === 5) return !!formData.estampa;
+    if (currentStep === 6) return !!formData.tecido;
+    return true; // passos 7 e 8 não têm obrigatoriedade
+  })();
 
+  const nextStep = () => {
+    if (!canProceed) return;
     if (currentStep < 8) {
       setSearchParams({ orcamento_id: orcamentoId, aba: (currentStep + 1).toString() });
     }
@@ -573,8 +573,8 @@ const Orcamento: React.FC = () => {
 
           <button
             onClick={currentStep < 8 ? nextStep : handleFinish}
-            disabled={isSubmitting}
-            className={`flex-1 h-16 md:h-16 btn-primary text-slate-900 rounded-2xl font-black uppercase tracking-widest italic text-lg md:text-xl flex items-center justify-center gap-3 transition-all order-1 md:order-2 ${isSubmitting ? 'opacity-75 cursor-not-allowed' : ''}`}
+            disabled={isSubmitting || (currentStep < 8 && !canProceed)}
+            className={`flex-1 h-16 md:h-16 btn-primary text-slate-900 rounded-2xl font-black uppercase tracking-widest italic text-lg md:text-xl flex items-center justify-center gap-3 transition-all order-1 md:order-2 ${(isSubmitting || (currentStep < 8 && !canProceed)) ? 'opacity-40 cursor-not-allowed' : ''}`}
           >
             {currentStep === 8 ? (
               isSubmitting ? <><RotateCw className="w-7 h-7 animate-spin" /> ENVIANDO...</> : <><Send className="w-7 h-7" /> FINALIZAR PROJETO</>
