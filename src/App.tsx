@@ -5,6 +5,7 @@ import Login from './pages/Login';
 import Pedidos from './pages/Pedidos';
 import Clientes from './pages/Clientes';
 import Financeiro from './pages/Financeiro';
+import Fiscal from './pages/Fiscal';
 import Produtos from './pages/Produtos';
 import Orcamento from './pages/Public/Orcamento';
 import OrcamentoConfigPage from './pages/Configuracoes';
@@ -22,6 +23,7 @@ function App() {
           <Route path="clientes" element={<Clientes />} />
           <Route path="produtos" element={<Produtos />} />
           <Route path="financeiro" element={<Financeiro />} />
+          <Route path="fiscal" element={<Fiscal />} />
           <Route path="config-orcamento" element={<OrcamentoConfigPage />} />
         </Route>
       </Routes>

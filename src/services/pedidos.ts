@@ -25,5 +25,20 @@ export const pedidosService = {
   updateStatus: async (id: number, status: string) => {
     const { data } = await api.patch(`/api/v1/pedidos/${id}/`, { status });
     return data;
+  },
+  uploadFile: async (pedidoId: number, file: File) => {
+    const formData = new FormData();
+    formData.append('pedido', pedidoId.toString());
+    formData.append('caminho', file);
+    formData.append('nome_original', file.name);
+    formData.append('mime_type', file.type);
+    formData.append('tamanho_bytes', file.size.toString());
+    
+    const { data } = await api.post('/api/v1/pedidos-arquivos/', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return data;
   }
 };

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useForm, useFieldArray, useWatch } from 'react-hook-form';
-import { X, Plus, Trash2 } from 'lucide-react';
-import type { Pedido } from '../../types/pedido';
+import { X, Plus, Trash2, Upload, File as FileIcon } from 'lucide-react';
+import type { Pedido, PedidoArquivo } from '../../types/pedido';
 import type { Cliente } from '../../types/cliente';
 import { pedidosService } from '../../services/pedidos';
 import { clientesService } from '../../services/clientes';
@@ -16,6 +16,8 @@ interface PedidoModalProps {
 
 export function PedidoModal({ isOpen, onClose, onSave, pedidoToEdit }: PedidoModalProps) {
   const [clientes, setClientes] = useState<Cliente[]>([]);
+  const [filesToUpload, setFilesToUpload] = useState<File[]>([]);
+  const [isUploading, setIsUploading] = useState(false);
   
   const { register, control, handleSubmit, reset, setValue, watch } = useForm<Partial<Pedido>>({
     defaultValues: {
@@ -76,21 +78,36 @@ export function PedidoModal({ isOpen, onClose, onSave, pedidoToEdit }: PedidoMod
 
   const onSubmit = async (data: Partial<Pedido>) => {
     try {
+      setIsUploading(true);
       const payload = {
         ...data,
         data_entrega_prevista: data.data_entrega_prevista || undefined
       };
 
+      let savedPedido: Pedido;
       if (pedidoToEdit) {
-        await pedidosService.update(pedidoToEdit.id, payload);
+        const response = await pedidosService.update(pedidoToEdit.id, payload);
+        savedPedido = response;
       } else {
-        await pedidosService.create(payload);
+        const response = await pedidosService.create(payload);
+        savedPedido = response;
       }
+
+      // Upload files
+      if (filesToUpload.length > 0) {
+        await Promise.all(
+          filesToUpload.map(file => pedidosService.uploadFile(savedPedido.id, file))
+        );
+      }
+
+      setFilesToUpload([]);
       onSave();
       onClose();
     } catch (error) {
       console.error('Failed to save pedido', error);
       alert('Erro ao salvar pedido.');
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -210,13 +227,75 @@ export function PedidoModal({ isOpen, onClose, onSave, pedidoToEdit }: PedidoMod
               </div>
             </div>
 
+            <div className="col-span-3 pt-6 border-t border-slate-100">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-sm font-semibold text-slate-800">Arquivos e Artes</h3>
+                <label className="cursor-pointer bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-lg text-[11px] font-bold uppercase transition-all flex items-center gap-2">
+                  <Upload className="w-3.5 h-3.5" />
+                  Selecionar Arquivos
+                  <input
+                    type="file"
+                    multiple
+                    className="hidden"
+                    onChange={(e) => {
+                      if (e.target.files) {
+                        setFilesToUpload([...filesToUpload, ...Array.from(e.target.files)]);
+                      }
+                    }}
+                  />
+                </label>
+              </div>
+
+              {filesToUpload.length > 0 && (
+                <div className="grid grid-cols-2 gap-3">
+                  {filesToUpload.map((file, idx) => (
+                    <div key={idx} className="flex items-center justify-between p-3 bg-blue-50/50 border border-blue-100 rounded-xl">
+                      <div className="flex items-center gap-3 overflow-hidden">
+                        <FileIcon className="w-4 h-4 text-blue-500 flex-shrink-0" />
+                        <span className="text-xs font-medium text-slate-700 truncate">{file.name}</span>
+                        <span className="text-[10px] text-slate-400 font-bold">({(file.size / 1024).toFixed(0)} KB)</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setFilesToUpload(filesToUpload.filter((_, i) => i !== idx))}
+                        className="text-rose-500 hover:bg-rose-50 p-1 rounded-lg transition-colors"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {pedidoToEdit?.arquivos && pedidoToEdit.arquivos.length > 0 && (
+                <div className="mt-4 space-y-2">
+                   <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Arquivos Existentes</p>
+                   <div className="grid grid-cols-2 gap-3">
+                     {pedidoToEdit.arquivos.map((arquivo: PedidoArquivo) => (
+                       <a 
+                         key={arquivo.id} 
+                         href={arquivo.caminho} 
+                         target="_blank" 
+                         rel="noreferrer"
+                         className="flex items-center gap-3 p-3 bg-white border border-slate-100 rounded-xl hover:border-blue-200 transition-all group"
+                       >
+                         <FileIcon className="w-4 h-4 text-slate-400 group-hover:text-blue-500" />
+                         <span className="text-xs font-medium text-slate-600 truncate">{arquivo.nome_original}</span>
+                       </a>
+                     ))}
+                   </div>
+                </div>
+              )}
+            </div>
+
             <div className="col-span-3 sm:col-span-2">
-              <label className="block text-sm font-medium text-slate-700 mb-1">Observações</label>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Observações Internas</label>
               <textarea
-                {...register('observacoes')}
-                rows={2}
-                className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-              ></textarea>
+                {...register('observacoes_internas')}
+                rows={3}
+                className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all text-sm"
+                placeholder="Notas que apenas a equipe verá..."
+              />
             </div>
 
             <div className="col-span-3 sm:col-span-1 bg-blue-50 p-6 rounded-2xl flex flex-col justify-center items-end">
@@ -225,19 +304,20 @@ export function PedidoModal({ isOpen, onClose, onSave, pedidoToEdit }: PedidoMod
             </div>
           </div>
 
-          <div className="flex justify-end gap-3 mt-8 pt-6 border-t border-slate-100">
+          <div className="mt-8 flex justify-end gap-3 flex-shrink-0">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg font-medium transition-colors"
+              className="px-6 py-2 border border-slate-200 text-slate-600 rounded-lg font-medium hover:bg-slate-50 transition-all text-sm"
             >
               Cancelar
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
+              disabled={isUploading}
+              className="px-8 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 shadow-lg shadow-blue-200 transition-all text-sm disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Salvar Pedido
+              {isUploading ? 'Salvando...' : (pedidoToEdit ? 'Atualizar Pedido' : 'Criar Pedido')}
             </button>
           </div>
         </form>

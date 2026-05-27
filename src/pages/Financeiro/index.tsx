@@ -8,7 +8,8 @@ import {
   Filter, 
   MoreHorizontal,
   TrendingUp,
-  TrendingDown
+  TrendingDown,
+  Download
 } from 'lucide-react';
 import { financeiroService } from '../../services/financeiro';
 import type { Lancamento, FinanceiroSummary } from '../../types/financeiro';
@@ -57,6 +58,34 @@ export default function Financeiro() {
     setIsModalOpen(true);
   };
 
+  const handleExportCSV = () => {
+    if (lancamentos.length === 0) return;
+
+    const headers = ['Data', 'Descrição', 'Tipo', 'Forma Pagamento', 'Valor'];
+    const rows = lancamentos.map(l => [
+      new Date(l.data_lancamento).toLocaleDateString('pt-BR'),
+      l.descricao,
+      l.tipo,
+      l.forma_pagamento || '',
+      l.valor.toString()
+    ]);
+
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(r => r.join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `financeiro_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   const filteredLancamentos = lancamentos.filter(l => 
     l.descricao.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -69,6 +98,13 @@ export default function Financeiro() {
           <p className="text-slate-500 text-sm mt-1">Controle de entradas, saídas e fluxo de caixa</p>
         </div>
         <div className="flex items-center gap-3">
+          <button 
+            onClick={handleExportCSV}
+            className="flex items-center gap-2 px-4 py-2.5 border border-slate-200 rounded-xl text-sm font-bold text-slate-600 hover:bg-slate-50 transition-all mr-2"
+          >
+            <Download className="w-5 h-5" />
+            Exportar CSV
+          </button>
           <button 
             onClick={() => openNewModal('entrada')}
             className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl font-bold transition-all shadow-lg shadow-emerald-100 flex items-center gap-2 text-sm"

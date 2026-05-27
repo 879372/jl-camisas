@@ -3,6 +3,7 @@ import { Plus, Search, MoreVertical, Calendar, User, ArrowRight, Maximize2, Hash
 import { pedidosService } from '../../services/pedidos';
 import type { Pedido, PedidoItem } from '../../types/pedido';
 import { PedidoModal } from './PedidoModal';
+import { FiscalPromptModal } from './FiscalPromptModal';
 import { formatCurrency } from '../../utils/masks';
 
 const COLUMNS = [
@@ -19,6 +20,10 @@ export default function Pedidos() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [pedidoToEdit, setPedidoToEdit] = useState<Pedido | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  
+  // Fiscal Prompt State
+  const [isFiscalModalOpen, setIsFiscalModalOpen] = useState(false);
+  const [pedidoForFiscal, setPedidoForFiscal] = useState<Pedido | null>(null);
 
   const loadPedidos = async (showLoading = true) => {
     if (showLoading) setLoading(true);
@@ -38,11 +43,42 @@ export default function Pedidos() {
   }, []);
 
   const handleUpdateStatus = async (id: number, newStatus: string) => {
+    if (newStatus === 'concluido') {
+      const pedido = pedidos.find(p => p.id === id);
+      if (pedido) {
+        setPedidoForFiscal(pedido);
+        setIsFiscalModalOpen(true);
+        return;
+      }
+    }
+    
     try {
       await pedidosService.updateStatus(id, newStatus);
       loadPedidos();
     } catch (error) {
       console.error('Failed to update status', error);
+    }
+  };
+
+  const handleFiscalConfirm = async (type: 'nfe' | 'nfce' | 'none') => {
+    if (!pedidoForFiscal) return;
+
+    try {
+      // Primeiro atualizamos o status do pedido para concluído
+      await pedidosService.updateStatus(pedidoForFiscal.id, 'concluido');
+      
+      if (type !== 'none') {
+        // Aqui chamaria o serviço de emissão de nota fiscal
+        console.log(`Emitindo ${type} para o pedido ${pedidoForFiscal.numero}`);
+        alert(`${type.toUpperCase()} solicitada para o pedido ${pedidoForFiscal.numero}. (Simulação)`);
+      }
+      
+      setIsFiscalModalOpen(false);
+      setPedidoForFiscal(null);
+      loadPedidos();
+    } catch (error) {
+      console.error('Failed to conclude order with fiscal', error);
+      alert('Erro ao concluir pedido.');
     }
   };
 
@@ -207,10 +243,17 @@ export default function Pedidos() {
       </div>
 
       <PedidoModal 
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onSave={loadPedidos}
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)} 
+        onSave={() => loadPedidos()}
         pedidoToEdit={pedidoToEdit}
+      />
+
+      <FiscalPromptModal 
+        isOpen={isFiscalModalOpen}
+        onClose={() => setIsFiscalModalOpen(false)}
+        onConfirm={handleFiscalConfirm}
+        pedidoNumero={pedidoForFiscal?.numero || ''}
       />
     </div>
   );

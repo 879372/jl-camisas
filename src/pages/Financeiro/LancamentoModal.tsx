@@ -1,8 +1,10 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { X } from 'lucide-react';
 import type { Lancamento } from '../../types/financeiro';
+import type { Pedido } from '../../types/pedido';
 import { financeiroService } from '../../services/financeiro';
+import { pedidosService } from '../../services/pedidos';
 import { formatCurrency, parseCurrency } from '../../utils/masks';
 
 interface LancamentoModalProps {
@@ -14,6 +16,8 @@ interface LancamentoModalProps {
 }
 
 export function LancamentoModal({ isOpen, onClose, onSave, lancamentoToEdit, fixedType }: LancamentoModalProps) {
+  const [pedidos, setPedidos] = useState<Pedido[]>([]);
+  
   const { register, handleSubmit, reset, setValue, watch } = useForm<Partial<Lancamento>>({
     defaultValues: {
       tipo: fixedType || 'entrada',
@@ -24,6 +28,20 @@ export function LancamentoModal({ isOpen, onClose, onSave, lancamentoToEdit, fix
 
   const watchedValor = watch('valor');
   const watchedTipo = watch('tipo');
+
+  useEffect(() => {
+    if (isOpen) {
+      const loadPedidos = async () => {
+        try {
+          const data = await pedidosService.getAll();
+          setPedidos(data.results || data);
+        } catch (error) {
+          console.error("Failed to load pedidos for LancamentoModal", error);
+        }
+      };
+      loadPedidos();
+    }
+  }, [isOpen]);
 
   useEffect(() => {
     if (lancamentoToEdit) {
@@ -90,6 +108,24 @@ export function LancamentoModal({ isOpen, onClose, onSave, lancamentoToEdit, fix
                 className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
                 placeholder="Ex: Compra de matéria-prima"
               />
+            </div>
+
+            <div className="col-span-2">
+              <label className="block text-sm font-medium text-slate-700 mb-1">Vincular a Pedido (Opcional)</label>
+              <select
+                {...register('pedido')}
+                className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+              >
+                <option value="">Nenhum pedido</option>
+                {pedidos.map(p => (
+                  <option key={p.id} value={p.id}>
+                    Pedido #{p.numero} - {p.cliente_nome} ({formatCurrency(p.valor_total)})
+                  </option>
+                ))}
+              </select>
+              <p className="mt-1 text-[10px] text-slate-400 font-medium">
+                Vincular entradas a pedidos atualiza automaticamente o status de pagamento do pedido.
+              </p>
             </div>
 
             <div className="col-span-2">

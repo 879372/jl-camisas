@@ -12,11 +12,20 @@ export interface PedidoItem {
   especificacoes?: Record<string, unknown>;
 }
 
+export interface PedidoArquivo {
+  id: number;
+  nome_original: string;
+  caminho: string;
+  mime_type?: string;
+  tamanho_bytes?: number;
+  uploaded_at: string;
+}
+
 export interface Pedido {
   id: number;
   numero: string;
   cliente: number;
-  cliente_nome?: string; // We can add this via serializer or fetch
+  cliente_nome?: string;
   status: StatusPedido;
   status_pagamento: StatusPagamento;
   valor_total: number;
@@ -25,6 +34,7 @@ export interface Pedido {
   observacoes?: string;
   observacoes_internas?: string;
   itens?: PedidoItem[];
+  arquivos?: PedidoArquivo[];
   created_at?: string;
   updated_at?: string;
 }

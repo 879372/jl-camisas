@@ -19,7 +19,9 @@ export default function Dashboard() {
     aguardando: { count: 0, total: 0 },
     producao: { count: 0, total: 0 },
     concluido: { count: 0, total: 0 },
-    totalItens: 0
+    totalItens: 0,
+    faturamentoMes: 0,
+    pedidosMes: 0
   });
   const [proximasEntregas, setProximasEntregas] = useState<Pedido[]>([]);
   const [loading, setLoading] = useState(true);
@@ -29,18 +31,32 @@ export default function Dashboard() {
     try {
       const data = await pedidosService.getAll();
       const pedidosList: Pedido[] = data.results || data;
+      
+      const now = new Date();
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
       const newStats = {
         orcamento: { count: 0, total: 0 },
         aguardando: { count: 0, total: 0 },
         producao: { count: 0, total: 0 },
         concluido: { count: 0, total: 0 },
-        totalItens: 0
+        totalItens: 0,
+        faturamentoMes: 0,
+        pedidosMes: 0
       };
 
       pedidosList.forEach(p => {
         const val = Number(p.valor_total) || 0;
         const itemsQty = p.itens?.reduce((acc: number, item: PedidoItem) => acc + Number(item.quantidade), 0) || 0;
         newStats.totalItens += itemsQty;
+
+        const dataPedido = new Date(p.created_at || '');
+        if (dataPedido >= startOfMonth) {
+          newStats.pedidosMes++;
+          if (p.status === 'concluido' || p.status_pagamento === 'pago') {
+            newStats.faturamentoMes += val;
+          }
+        }
 
         if (p.status === 'orcamento') {
           newStats.orcamento.count++;
@@ -93,9 +109,17 @@ export default function Dashboard() {
           <h1 className="text-2xl font-bold tracking-tight text-slate-800">Gestão Operacional</h1>
           <p className="text-slate-500 text-sm mt-1">Visão consolidada de pedidos e produção</p>
         </div>
-        <div className="flex items-center gap-3">
-          <div className="flex flex-col items-end mr-4">
-             <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest leading-none">Total de Peças</span>
+        <div className="flex items-center gap-6">
+          <div className="flex flex-col items-end">
+             <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest leading-none mb-1">Faturamento/Mês</span>
+             <span className="text-xl font-bold text-emerald-600">{formatCurrency(stats.faturamentoMes)}</span>
+          </div>
+          <div className="flex flex-col items-end">
+             <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest leading-none mb-1">Pedidos/Mês</span>
+             <span className="text-xl font-bold text-slate-800">{stats.pedidosMes}</span>
+          </div>
+          <div className="flex flex-col items-end">
+             <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest leading-none mb-1">Total de Peças</span>
              <span className="text-xl font-bold text-blue-600">{stats.totalItens}</span>
           </div>
           <div className="flex items-center gap-2 text-[10px] font-semibold text-slate-400 bg-white px-4 py-2 rounded-xl border border-slate-100 shadow-sm uppercase tracking-widest">
