@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { 
-  FileText, 
   Search, 
   Download, 
   CheckCircle2, 
@@ -10,7 +9,6 @@ import {
   ExternalLink
 } from 'lucide-react';
 import api from '../../services/api';
-import { formatCurrency } from '../../utils/masks';
 
 interface NotaFiscal {
   id: number;
