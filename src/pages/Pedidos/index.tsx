@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Plus, Search, MoreVertical, Calendar, User, ArrowRight, Maximize2, Hash } from 'lucide-react';
 import { pedidosService } from '../../services/pedidos';
-import type { Pedido, PedidoItem } from '../../types/pedido';
+import type { Pedido, PedidoItem, StatusPedido } from '../../types/pedido';
 import { PedidoModal } from './PedidoModal';
 import { FiscalPromptModal } from './FiscalPromptModal';
 import { formatCurrency } from '../../utils/masks';
@@ -13,6 +13,12 @@ const COLUMNS = [
   { id: 'concluido', title: 'Concluído', color: 'emerald', dot: 'bg-emerald-300', border: 'border-emerald-200' },
   { id: 'cancelado', title: 'Cancelado', color: 'rose', dot: 'bg-rose-300', border: 'border-rose-200' },
 ];
+
+const NEXT_STATUS: Partial<Record<StatusPedido, StatusPedido>> = {
+  orcamento: 'aguardando_pagamento',
+  aguardando_pagamento: 'em_producao',
+  em_producao: 'concluido',
+};
 
 export default function Pedidos() {
   const [pedidos, setPedidos] = useState<Pedido[]>([]);
@@ -29,7 +35,7 @@ export default function Pedidos() {
     if (showLoading) setLoading(true);
     try {
       const data = await pedidosService.getAll();
-      setPedidos(data.results || data);
+      setPedidos(data);
     } catch (error) {
       console.error('Failed to fetch pedidos', error);
     } finally {
@@ -64,13 +70,10 @@ export default function Pedidos() {
     if (!pedidoForFiscal) return;
 
     try {
-      // Primeiro atualizamos o status do pedido para concluído
-      await pedidosService.updateStatus(pedidoForFiscal.id, 'concluido');
-      
+      await pedidosService.conclude(pedidoForFiscal.id, type);
+
       if (type !== 'none') {
-        // Aqui chamaria o serviço de emissão de nota fiscal
-        console.log(`Emitindo ${type} para o pedido ${pedidoForFiscal.numero}`);
-        alert(`${type.toUpperCase()} solicitada para o pedido ${pedidoForFiscal.numero}. (Simulação)`);
+        alert(`${type.toUpperCase()} registrada como pendente para o pedido ${pedidoForFiscal.numero}.`);
       }
       
       setIsFiscalModalOpen(false);
@@ -224,11 +227,10 @@ export default function Pedidos() {
                       <button 
                         onClick={(e) => {
                           e.stopPropagation();
-                          const currentIndex = COLUMNS.findIndex(c => c.id === column.id);
-                          const nextColumn = COLUMNS[currentIndex + 1]?.id;
+                          const nextColumn = NEXT_STATUS[pedido.status];
                           if (nextColumn) handleUpdateStatus(pedido.id, nextColumn);
                         }}
-                        className="opacity-0 group-hover:opacity-100 p-1.5 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-600 hover:text-white transition-all shadow-sm"
+                        className={`p-1.5 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-600 hover:text-white transition-all shadow-sm ${NEXT_STATUS[pedido.status] ? 'opacity-0 group-hover:opacity-100' : 'hidden'}`}
                         title="Mover para próxima etapa"
                       >
                         <ArrowRight className="w-3.5 h-3.5" />

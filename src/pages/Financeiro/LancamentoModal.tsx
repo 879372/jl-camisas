@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { X } from 'lucide-react';
 import type { Lancamento } from '../../types/financeiro';
 import type { Pedido } from '../../types/pedido';
@@ -18,7 +18,7 @@ interface LancamentoModalProps {
 export function LancamentoModal({ isOpen, onClose, onSave, lancamentoToEdit, fixedType }: LancamentoModalProps) {
   const [pedidos, setPedidos] = useState<Pedido[]>([]);
   
-  const { register, handleSubmit, reset, setValue, watch } = useForm<Partial<Lancamento>>({
+  const { register, handleSubmit, reset, setValue, control } = useForm<Partial<Lancamento>>({
     defaultValues: {
       tipo: fixedType || 'entrada',
       forma_pagamento: 'pix',
@@ -26,15 +26,15 @@ export function LancamentoModal({ isOpen, onClose, onSave, lancamentoToEdit, fix
     }
   });
 
-  const watchedValor = watch('valor');
-  const watchedTipo = watch('tipo');
+  const watchedValor = useWatch({ control, name: 'valor' });
+  const watchedTipo = useWatch({ control, name: 'tipo' });
 
   useEffect(() => {
     if (isOpen) {
       const loadPedidos = async () => {
         try {
           const data = await pedidosService.getAll();
-          setPedidos(data.results || data);
+          setPedidos(data);
         } catch (error) {
           console.error("Failed to load pedidos for LancamentoModal", error);
         }

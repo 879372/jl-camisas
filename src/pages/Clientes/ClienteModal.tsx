@@ -17,19 +17,16 @@ export function ClienteModal({ isOpen, onClose, onSave, clienteToEdit }: Cliente
 
   useEffect(() => {
     if (clienteToEdit) {
-      Object.keys(clienteToEdit).forEach((key) => {
-        let val = clienteToEdit[key as keyof Cliente] as unknown;
-        if (val) {
-          if (key === 'cpf_cnpj') val = formatCpfCnpj(val as string);
-          if (key === 'telefone') val = formatTelefone(val as string);
-          if (key === 'cep') val = formatCEP(val as string);
-        }
-        setValue(key as keyof Cliente, val as any);
+      reset({
+        ...clienteToEdit,
+        cpf_cnpj: formatCpfCnpj(clienteToEdit.cpf_cnpj),
+        telefone: formatTelefone(clienteToEdit.telefone),
+        cep: formatCEP(clienteToEdit.cep),
       });
     } else {
       reset({ tipo: 'fisica' });
     }
-  }, [clienteToEdit, setValue, reset, isOpen]);
+  }, [clienteToEdit, reset, isOpen]);
 
   const onSubmit = async (data: Partial<Cliente>) => {
     try {
@@ -37,6 +34,7 @@ export function ClienteModal({ isOpen, onClose, onSave, clienteToEdit }: Cliente
       if (payload.cpf_cnpj) payload.cpf_cnpj = unmask(payload.cpf_cnpj);
       if (payload.telefone) payload.telefone = unmask(payload.telefone);
       if (payload.cep) payload.cep = unmask(payload.cep);
+      if (!payload.data_nascimento) delete payload.data_nascimento;
 
       if (clienteToEdit) {
         await clientesService.update(clienteToEdit.id, payload);

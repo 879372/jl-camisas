@@ -16,11 +16,7 @@ export default function Produtos() {
     if (showLoading) setLoading(true);
     try {
       const data = await produtosService.getAll();
-      if (data.results) {
-        setProdutos(data.results);
-      } else {
-        setProdutos(data);
-      }
+      setProdutos(data);
     } catch (error) {
       console.error('Failed to fetch produtos', error);
     } finally {

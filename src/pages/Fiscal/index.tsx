@@ -8,6 +8,7 @@ import {
   Printer,
   ExternalLink
 } from 'lucide-react';
+import { getAllPages } from '../../services/pagination';
 import api from '../../services/api';
 
 interface NotaFiscal {
@@ -20,18 +21,19 @@ interface NotaFiscal {
   status: string;
   emitida_em: string;
   created_at: string;
+  xml?: string | null;
 }
 
 export default function Fiscal() {
   const [notas, setNotas] = useState<NotaFiscal[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [exporting, setExporting] = useState(false);
 
   const loadNotas = async () => {
     setLoading(true);
     try {
-      const { data } = await api.get('/api/v1/notas-fiscais/');
-      setNotas(data.results || data);
+      setNotas(await getAllPages<NotaFiscal>('/api/v1/notas-fiscais/'));
     } catch (error) {
       console.error('Failed to fetch notas fiscais', error);
     } finally {
@@ -40,12 +42,35 @@ export default function Fiscal() {
   };
 
   useEffect(() => {
-    loadNotas();
+    const timer = setTimeout(() => loadNotas(), 0);
+    return () => clearTimeout(timer);
   }, []);
 
   const filteredNotas = notas.filter(n => 
     n.numero?.includes(searchTerm) || n.chave_acesso?.includes(searchTerm)
   );
+
+  const handleExportXml = async () => {
+    setExporting(true);
+    try {
+      const response = await api.get('/api/v1/notas-fiscais/exportar-xml/', {
+        responseType: 'blob',
+      });
+      const url = URL.createObjectURL(response.data);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `xml-notas-fiscais-${new Date().toISOString().slice(0, 10)}.zip`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Failed to export invoice XML files', error);
+      window.alert('Nenhum XML está disponível para exportação.');
+    } finally {
+      setExporting(false);
+    }
+  };
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -56,10 +81,12 @@ export default function Fiscal() {
         </div>
         <div className="flex items-center gap-3">
           <button 
-            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl font-bold transition-all shadow-lg shadow-blue-100 flex items-center gap-2 text-sm"
+            onClick={handleExportXml}
+            disabled={exporting}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl font-bold transition-all shadow-lg shadow-blue-100 flex items-center gap-2 text-sm disabled:opacity-60 disabled:cursor-wait"
           >
             <Download className="w-5 h-5" />
-            Exportar XMLs
+            {exporting ? 'Gerando ZIP...' : 'Exportar XMLs'}
           </button>
         </div>
       </div>
@@ -67,13 +94,13 @@ export default function Fiscal() {
       {/* Summary Status */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         {[
-          { label: 'Autorizadas', count: notas.filter(n => n.status === 'autorizada').length, icon: CheckCircle2, color: 'emerald' },
-          { label: 'Pendentes', count: notas.filter(n => n.status === 'pendente').length, icon: Clock, color: 'blue' },
-          { label: 'Rejeitadas', count: notas.filter(n => n.status === 'rejeitada').length, icon: AlertCircle, color: 'rose' },
-          { label: 'Canceladas', count: notas.filter(n => n.status === 'cancelada').length, icon: AlertCircle, color: 'slate' },
+          { label: 'Autorizadas', count: notas.filter(n => n.status === 'autorizada').length, icon: CheckCircle2, iconClass: 'bg-emerald-50 text-emerald-600' },
+          { label: 'Pendentes', count: notas.filter(n => n.status === 'pendente').length, icon: Clock, iconClass: 'bg-blue-50 text-blue-600' },
+          { label: 'Rejeitadas', count: notas.filter(n => n.status === 'rejeitada').length, icon: AlertCircle, iconClass: 'bg-rose-50 text-rose-600' },
+          { label: 'Canceladas', count: notas.filter(n => n.status === 'cancelada').length, icon: AlertCircle, iconClass: 'bg-slate-50 text-slate-600' },
         ].map((stat, i) => (
           <div key={i} className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm flex items-center gap-4">
-            <div className={`w-10 h-10 rounded-xl bg-${stat.color}-50 flex items-center justify-center text-${stat.color}-600`}>
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${stat.iconClass}`}>
               <stat.icon className="w-5 h-5" />
             </div>
             <div>
@@ -164,10 +191,10 @@ export default function Fiscal() {
                     </td>
                     <td className="px-6 py-4 text-right">
                        <div className="flex items-center justify-end gap-2">
-                         <button className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all" title="Imprimir DANFE">
+                         <button disabled className="p-2 text-slate-300 cursor-not-allowed rounded-lg" title="Disponível após integração com o provedor fiscal">
                            <Printer className="w-4 h-4" />
                          </button>
-                         <button className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-all" title="Ver no SEFAZ">
+                         <button disabled className="p-2 text-slate-300 cursor-not-allowed rounded-lg" title="Disponível após autorização da nota">
                            <ExternalLink className="w-4 h-4" />
                          </button>
                        </div>

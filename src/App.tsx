@@ -9,6 +9,8 @@ import Fiscal from './pages/Fiscal';
 import Produtos from './pages/Produtos';
 import Orcamento from './pages/Public/Orcamento';
 import OrcamentoConfigPage from './pages/Configuracoes';
+import ProtectedRoute from './components/ProtectedRoute';
+import Usuarios from './pages/Usuarios';
 function App() {
   return (
     <Router>
@@ -16,15 +18,18 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/orcamento" element={<Orcamento />} />
         
-        <Route path="/" element={<Layout />}>
-          <Route index element={<Navigate to="/dashboard" replace />} />
-          <Route path="dashboard" element={<Dashboard />} />
-          <Route path="pedidos" element={<Pedidos />} />
-          <Route path="clientes" element={<Clientes />} />
-          <Route path="produtos" element={<Produtos />} />
-          <Route path="financeiro" element={<Financeiro />} />
-          <Route path="fiscal" element={<Fiscal />} />
-          <Route path="config-orcamento" element={<OrcamentoConfigPage />} />
+        <Route element={<ProtectedRoute />}>
+          <Route path="/" element={<Layout />}>
+            <Route index element={<Navigate to="/dashboard" replace />} />
+            <Route path="dashboard" element={<Dashboard />} />
+            <Route path="pedidos" element={<Pedidos />} />
+            <Route path="clientes" element={<Clientes />} />
+            <Route path="produtos" element={<Produtos />} />
+            <Route path="financeiro" element={<Financeiro />} />
+            <Route path="fiscal" element={<Fiscal />} />
+            <Route path="config-orcamento" element={<OrcamentoConfigPage />} />
+            <Route path="usuarios" element={<Usuarios />} />
+          </Route>
         </Route>
       </Routes>
     </Router>

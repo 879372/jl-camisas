@@ -16,12 +16,7 @@ export default function Clientes() {
     setLoading(true);
     try {
       const data = await clientesService.getAll();
-      // Handle Django Rest Framework pagination format if necessary
-      if (data.results) {
-        setClientes(data.results);
-      } else {
-        setClientes(data);
-      }
+      setClientes(data);
     } catch (error) {
       console.error('Failed to fetch clientes', error);
     } finally {

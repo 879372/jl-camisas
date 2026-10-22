@@ -1,4 +1,6 @@
 import api from './api';
+import { getAllPages } from './pagination';
+import type { OrcamentoOpcao } from '../types/orcamento';
 
 export const getOrcamentoConfig = async () => {
   const response = await api.get('/api/v1/orcamento-publico/config/');
@@ -10,9 +12,14 @@ export const updateOrcamentoConfig = async (id: number, data: Record<string, unk
   return response.data;
 };
 
-export const getOrcamentoOpcoes = async (params?: Record<string, unknown>) => {
-  const response = await api.get('/api/v1/orcamento-publico/opcoes/', { params });
+export const createOrcamentoConfig = async (data: Record<string, unknown>) => {
+  const response = await api.post('/api/v1/orcamento-publico/config/', data);
   return response.data;
+};
+
+export const getOrcamentoOpcoes = async (params?: Record<string, unknown>) => {
+  const results = await getAllPages<OrcamentoOpcao>('/api/v1/orcamento-publico/opcoes/', { params });
+  return { count: results.length, next: null, previous: null, results };
 };
 
 export const createOrcamentoOpcao = async (data: Record<string, unknown>) => {

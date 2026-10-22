@@ -12,29 +12,41 @@ interface ProdutoModalProps {
   produtoToEdit: Produto | null;
 }
 
+type ProdutoForm = Omit<Partial<Produto>, 'preco_base'> & {
+  preco_base?: number | string;
+};
+
 export function ProdutoModal({ isOpen, onClose, onSave, produtoToEdit }: ProdutoModalProps) {
-  const { register, handleSubmit, reset, setValue } = useForm<Partial<Produto>>();
+  const { register, handleSubmit, reset, setValue } = useForm<ProdutoForm>();
 
   useEffect(() => {
     if (produtoToEdit) {
-      Object.keys(produtoToEdit).forEach((key) => {
-        let val = produtoToEdit[key as keyof Produto] as unknown;
-        if (key === 'preco_base' && val !== undefined) {
-          val = formatCurrency(String(val));
-        }
-        setValue(key as keyof Produto, val as any);
+      reset({
+        ...produtoToEdit,
+        preco_base: formatCurrency(String(produtoToEdit.preco_base)),
       });
     } else {
-      reset({ ativo: true, preco_base: 0, unidade: 'un' });
+      reset({
+        ativo: true,
+        preco_base: 0,
+        unidade: 'un',
+        origem: '0',
+        aliquota_icms: 0,
+        aliquota_ipi: 0,
+        aliquota_pis: 0,
+        aliquota_cofins: 0,
+      });
     }
-  }, [produtoToEdit, setValue, reset, isOpen]);
+  }, [produtoToEdit, reset, isOpen]);
 
-  const onSubmit = async (data: Partial<Produto>) => {
+  const onSubmit = async (data: ProdutoForm) => {
     try {
-      const payload = { ...data };
-      if (typeof payload.preco_base === 'string') {
-        payload.preco_base = parseCurrency(payload.preco_base);
-      }
+      const payload: Partial<Produto> = {
+        ...data,
+        preco_base: typeof data.preco_base === 'string'
+          ? parseCurrency(data.preco_base)
+          : data.preco_base,
+      };
 
       if (produtoToEdit) {
         await produtosService.update(produtoToEdit.id, payload);
@@ -95,7 +107,7 @@ export function ProdutoModal({ isOpen, onClose, onSave, produtoToEdit }: Produto
                 {...register('preco_base', { required: true })}
                 onChange={(e) => {
                   e.target.value = formatCurrency(e.target.value);
-                  setValue('preco_base', e.target.value as unknown as number);
+                  setValue('preco_base', e.target.value);
                 }}
                 className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
                 placeholder="R$ 0,00"
@@ -122,6 +134,61 @@ export function ProdutoModal({ isOpen, onClose, onSave, produtoToEdit }: Produto
                 className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
                 placeholder="Detalhes sobre o produto, material, etc..."
               ></textarea>
+            </div>
+
+            <div className="col-span-2 mt-2 pt-5 border-t border-slate-100">
+              <h3 className="text-sm font-semibold text-slate-800 mb-4">Dados fiscais do produto</h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div>
+                  <label className="block text-xs font-medium text-slate-600 mb-1">NCM</label>
+                  <input {...register('ncm')} maxLength={8} inputMode="numeric" placeholder="00000000" className="w-full px-3 py-2 border border-slate-200 rounded-lg" />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-600 mb-1">CEST</label>
+                  <input {...register('cest')} maxLength={7} inputMode="numeric" placeholder="0000000" className="w-full px-3 py-2 border border-slate-200 rounded-lg" />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-600 mb-1">CFOP padrão</label>
+                  <input {...register('cfop')} maxLength={4} inputMode="numeric" placeholder="5102" className="w-full px-3 py-2 border border-slate-200 rounded-lg" />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-600 mb-1">Origem</label>
+                  <select {...register('origem')} className="w-full px-3 py-2 border border-slate-200 rounded-lg">
+                    <option value="0">0 — Nacional</option>
+                    <option value="1">1 — Importação direta</option>
+                    <option value="2">2 — Mercado interno</option>
+                    <option value="3">3 — Importado &gt; 40%</option>
+                    <option value="5">5 — Importado ≤ 40%</option>
+                    <option value="8">8 — Importado &gt; 70%</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-600 mb-1">CST ICMS</label>
+                  <input {...register('cst_icms')} maxLength={3} className="w-full px-3 py-2 border border-slate-200 rounded-lg" />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-600 mb-1">CSOSN</label>
+                  <input {...register('csosn')} maxLength={3} className="w-full px-3 py-2 border border-slate-200 rounded-lg" />
+                </div>
+                {[
+                  ['aliquota_icms', 'ICMS %'],
+                  ['aliquota_ipi', 'IPI %'],
+                  ['aliquota_pis', 'PIS %'],
+                  ['aliquota_cofins', 'COFINS %'],
+                ].map(([field, label]) => (
+                  <div key={field}>
+                    <label className="block text-xs font-medium text-slate-600 mb-1">{label}</label>
+                    <input
+                      type="number"
+                      min="0"
+                      max="100"
+                      step="0.01"
+                      {...register(field as 'aliquota_icms' | 'aliquota_ipi' | 'aliquota_pis' | 'aliquota_cofins', { valueAsNumber: true })}
+                      className="w-full px-3 py-2 border border-slate-200 rounded-lg"
+                    />
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
 

@@ -24,15 +24,17 @@ export default function Financeiro() {
   const [lancamentoToEdit, setLancamentoToEdit] = useState<Lancamento | null>(null);
   const [fixedType, setFixedType] = useState<'entrada' | 'saida' | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [dataInicio, setDataInicio] = useState('');
+  const [dataFim, setDataFim] = useState('');
 
   const loadData = async (showLoading = true) => {
     if (showLoading) setLoading(true);
     try {
       const [listData, summaryData] = await Promise.all([
-        financeiroService.getAll(),
-        financeiroService.getSummary()
+        financeiroService.getAll({ data_inicio: dataInicio || undefined, data_fim: dataFim || undefined }),
+        financeiroService.getSummary({ data_inicio: dataInicio || undefined, data_fim: dataFim || undefined })
       ]);
-      setLancamentos(listData.results || listData);
+      setLancamentos(listData);
       setSummary(summaryData);
     } catch (error) {
       console.error('Failed to fetch financeiro data', error);
@@ -42,7 +44,20 @@ export default function Financeiro() {
   };
 
   useEffect(() => {
-    const timer = setTimeout(() => loadData(false), 0);
+    const timer = setTimeout(async () => {
+      try {
+        const [listData, summaryData] = await Promise.all([
+          financeiroService.getAll(),
+          financeiroService.getSummary(),
+        ]);
+        setLancamentos(listData);
+        setSummary(summaryData);
+      } catch (error) {
+        console.error('Failed to fetch financeiro data', error);
+      } finally {
+        setLoading(false);
+      }
+    }, 0);
     return () => clearTimeout(timer);
   }, []);
 
@@ -62,17 +77,18 @@ export default function Financeiro() {
     if (lancamentos.length === 0) return;
 
     const headers = ['Data', 'Descrição', 'Tipo', 'Forma Pagamento', 'Valor'];
+    const escapeCsv = (value: string) => `"${value.replaceAll('"', '""')}"`;
     const rows = lancamentos.map(l => [
       new Date(l.data_lancamento).toLocaleDateString('pt-BR'),
       l.descricao,
       l.tipo,
       l.forma_pagamento || '',
-      l.valor.toString()
+      l.valor.toString(),
     ]);
 
     const csvContent = [
-      headers.join(','),
-      ...rows.map(r => r.join(','))
+      headers.map(escapeCsv).join(','),
+      ...rows.map(r => r.map(value => escapeCsv(String(value))).join(','))
     ].join('\n');
 
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -177,10 +193,32 @@ export default function Financeiro() {
               className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all text-sm"
             />
           </div>
-          <button className="flex items-center gap-2 px-4 py-2 border border-slate-200 rounded-xl text-sm font-bold text-slate-600 hover:bg-slate-50 transition-all">
-            <Filter className="w-4 h-4" />
-            Filtrar por data
-          </button>
+          <div className="flex flex-wrap items-center gap-2">
+            <input
+              type="date"
+              aria-label="Data inicial"
+              value={dataInicio}
+              max={dataFim || undefined}
+              onChange={(event) => setDataInicio(event.target.value)}
+              className="px-3 py-2 border border-slate-200 rounded-xl text-sm text-slate-600"
+            />
+            <input
+              type="date"
+              aria-label="Data final"
+              value={dataFim}
+              min={dataInicio || undefined}
+              onChange={(event) => setDataFim(event.target.value)}
+              className="px-3 py-2 border border-slate-200 rounded-xl text-sm text-slate-600"
+            />
+            <button
+              onClick={() => loadData()}
+              disabled={Boolean(dataInicio && dataFim && dataInicio > dataFim)}
+              className="flex items-center gap-2 px-4 py-2 border border-slate-200 rounded-xl text-sm font-bold text-slate-600 hover:bg-slate-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <Filter className="w-4 h-4" />
+              Aplicar período
+            </button>
+          </div>
         </div>
 
         <div className="overflow-x-auto">

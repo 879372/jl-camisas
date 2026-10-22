@@ -1,7 +1,19 @@
 import { Bell, Search, LogOut } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import type { Usuario } from '../types/usuario';
 
-export default function Header() {
+interface HeaderProps {
+  user: Usuario | null;
+}
+
+const profileLabels: Record<string, string> = {
+  admin: 'Administrador',
+  operacional: 'Operacional',
+  financeiro: 'Financeiro',
+  vendas: 'Vendas',
+};
+
+export default function Header({ user }: HeaderProps) {
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -44,11 +56,11 @@ export default function Header() {
           <div className="flex items-center gap-4">
             <button className="flex items-center gap-3 hover:opacity-80 transition-opacity">
               <div className="flex flex-col text-right">
-                <span className="text-sm font-medium text-slate-700 leading-tight">Admin JL</span>
-                <span className="text-xs text-slate-500">Administrador</span>
+                <span className="text-sm font-medium text-slate-700 leading-tight">{user?.name || 'Carregando...'}</span>
+                <span className="text-xs text-slate-500">{user ? profileLabels[user.profile] : ''}</span>
               </div>
               <div className="h-9 w-9 rounded-full bg-gradient-to-tr from-blue-100 to-blue-200 flex items-center justify-center text-blue-700 font-bold border border-blue-300">
-                AD
+                {(user?.name || 'JL').split(' ').slice(0, 2).map(part => part[0]).join('').toUpperCase()}
               </div>
             </button>
 

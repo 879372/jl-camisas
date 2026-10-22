@@ -8,17 +8,24 @@ import {
   FileText,
   Settings 
 } from 'lucide-react';
+import type { PerfilUsuario } from '../types/usuario';
 
-export default function Sidebar() {
+interface SidebarProps {
+  profile?: PerfilUsuario;
+}
+
+export default function Sidebar({ profile }: SidebarProps) {
   const links = [
-    { name: 'Dashboard', path: '/dashboard', icon: <LayoutDashboard size={20} /> },
-    { name: 'Pedidos (Kanban)', path: '/pedidos', icon: <Layers size={20} /> },
-    { name: 'Clientes', path: '/clientes', icon: <Users size={20} /> },
-    { name: 'Produtos', path: '/produtos', icon: <Package size={20} /> },
-    { name: 'Financeiro', path: '/financeiro', icon: <Wallet size={20} /> },
-    { name: 'Fiscal', path: '/fiscal', icon: <FileText size={20} /> },
-    { name: 'Config. Orçamento', path: '/config-orcamento', icon: <Settings size={20} /> },
+    { name: 'Dashboard', path: '/dashboard', icon: <LayoutDashboard size={20} />, profiles: ['admin', 'operacional', 'financeiro', 'vendas'] },
+    { name: 'Pedidos (Kanban)', path: '/pedidos', icon: <Layers size={20} />, profiles: ['admin', 'operacional', 'financeiro', 'vendas'] },
+    { name: 'Clientes', path: '/clientes', icon: <Users size={20} />, profiles: ['admin', 'operacional', 'financeiro', 'vendas'] },
+    { name: 'Produtos', path: '/produtos', icon: <Package size={20} />, profiles: ['admin', 'operacional', 'financeiro', 'vendas'] },
+    { name: 'Financeiro', path: '/financeiro', icon: <Wallet size={20} />, profiles: ['admin', 'financeiro', 'vendas'] },
+    { name: 'Fiscal', path: '/fiscal', icon: <FileText size={20} />, profiles: ['admin', 'financeiro', 'vendas'] },
+    { name: 'Config. Orçamento', path: '/config-orcamento', icon: <Settings size={20} />, profiles: ['admin', 'vendas'] },
+    { name: 'Usuários', path: '/usuarios', icon: <Users size={20} />, profiles: ['admin'] },
   ];
+  const visibleLinks = profile ? links.filter(link => link.profiles.includes(profile)) : [];
 
   return (
     <aside className="w-64 flex-shrink-0 border-r border-slate-200 bg-white flex flex-col transition-all duration-300">
@@ -36,7 +43,7 @@ export default function Sidebar() {
           Gestão
         </div>
         
-        {links.map((link) => (
+        {visibleLinks.map((link) => (
           <NavLink
             key={link.path}
             to={link.path}

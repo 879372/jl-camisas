@@ -19,7 +19,7 @@ export function PedidoModal({ isOpen, onClose, onSave, pedidoToEdit }: PedidoMod
   const [filesToUpload, setFilesToUpload] = useState<File[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   
-  const { register, control, handleSubmit, reset, setValue, watch } = useForm<Partial<Pedido>>({
+  const { register, control, handleSubmit, reset, setValue } = useForm<Partial<Pedido>>({
     defaultValues: {
       status: 'orcamento',
       status_pagamento: 'pendente',
@@ -36,6 +36,7 @@ export function PedidoModal({ isOpen, onClose, onSave, pedidoToEdit }: PedidoMod
     control,
     name: 'itens'
   });
+  const watchedTotal = useWatch({ control, name: 'valor_total' });
 
   useEffect(() => {
     if (isOpen) {
@@ -44,7 +45,7 @@ export function PedidoModal({ isOpen, onClose, onSave, pedidoToEdit }: PedidoMod
           const [clientesData] = await Promise.all([
             clientesService.getAll()
           ]);
-          setClientes(clientesData.results || clientesData);
+          setClientes(clientesData);
         } catch (error) {
           console.error("Failed to load initial data for PedidoModal", error);
         }
@@ -55,7 +56,11 @@ export function PedidoModal({ isOpen, onClose, onSave, pedidoToEdit }: PedidoMod
 
   useEffect(() => {
     if (pedidoToEdit) {
-      reset(pedidoToEdit);
+      reset({
+        ...pedidoToEdit,
+        enviado_em: pedidoToEdit.enviado_em?.slice(0, 16),
+        entregue_em: pedidoToEdit.entregue_em?.slice(0, 16),
+      });
     } else {
       reset({
         status: 'orcamento',
@@ -81,7 +86,9 @@ export function PedidoModal({ isOpen, onClose, onSave, pedidoToEdit }: PedidoMod
       setIsUploading(true);
       const payload = {
         ...data,
-        data_entrega_prevista: data.data_entrega_prevista || undefined
+        data_entrega_prevista: data.data_entrega_prevista || undefined,
+        enviado_em: data.enviado_em || undefined,
+        entregue_em: data.entregue_em || undefined,
       };
 
       let savedPedido: Pedido;
@@ -106,6 +113,23 @@ export function PedidoModal({ isOpen, onClose, onSave, pedidoToEdit }: PedidoMod
     } catch (error) {
       console.error('Failed to save pedido', error);
       alert('Erro ao salvar pedido.');
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!pedidoToEdit || !window.confirm(`Excluir definitivamente o pedido ${pedidoToEdit.numero}?`)) {
+      return;
+    }
+    try {
+      setIsUploading(true);
+      await pedidosService.delete(pedidoToEdit.id);
+      onSave();
+      onClose();
+    } catch (error) {
+      console.error('Failed to delete pedido', error);
+      alert('Erro ao excluir pedido. Verifique se existem registros vinculados.');
     } finally {
       setIsUploading(false);
     }
@@ -150,7 +174,7 @@ export function PedidoModal({ isOpen, onClose, onSave, pedidoToEdit }: PedidoMod
                 <option value="orcamento">Orçamento</option>
                 <option value="aguardando_pagamento">Aguardando Início</option>
                 <option value="em_producao">Em Produção</option>
-                <option value="concluido">Concluído</option>
+                {pedidoToEdit?.status === 'concluido' && <option value="concluido">Concluído</option>}
                 <option value="cancelado">Cancelado</option>
               </select>
             </div>
@@ -288,6 +312,28 @@ export function PedidoModal({ isOpen, onClose, onSave, pedidoToEdit }: PedidoMod
               )}
             </div>
 
+            <div className="col-span-3 pt-6 border-t border-slate-100">
+              <h3 className="text-sm font-semibold text-slate-800 mb-4">Distribuição e entrega</h3>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-medium text-slate-600 mb-1">Transportadora</label>
+                  <input {...register('transportadora')} className="w-full px-3 py-2 border border-slate-200 rounded-lg" />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-600 mb-1">Código de rastreio</label>
+                  <input {...register('codigo_rastreio')} className="w-full px-3 py-2 border border-slate-200 rounded-lg" />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-600 mb-1">Data de envio</label>
+                  <input type="datetime-local" {...register('enviado_em')} className="w-full px-3 py-2 border border-slate-200 rounded-lg" />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-600 mb-1">Data de entrega</label>
+                  <input type="datetime-local" {...register('entregue_em')} className="w-full px-3 py-2 border border-slate-200 rounded-lg" />
+                </div>
+              </div>
+            </div>
+
             <div className="col-span-3 sm:col-span-2">
               <label className="block text-sm font-medium text-slate-700 mb-1">Observações Internas</label>
               <textarea
@@ -300,11 +346,21 @@ export function PedidoModal({ isOpen, onClose, onSave, pedidoToEdit }: PedidoMod
 
             <div className="col-span-3 sm:col-span-1 bg-blue-50 p-6 rounded-2xl flex flex-col justify-center items-end">
               <span className="text-blue-600 text-xs font-bold uppercase tracking-wider">Total do Pedido</span>
-              <span className="text-3xl font-bold text-blue-900 mt-1">{formatCurrency(watch('valor_total') || 0)}</span>
+              <span className="text-3xl font-bold text-blue-900 mt-1">{formatCurrency(watchedTotal || 0)}</span>
             </div>
           </div>
 
           <div className="mt-8 flex justify-end gap-3 flex-shrink-0">
+            {pedidoToEdit && (
+              <button
+                type="button"
+                onClick={handleDelete}
+                disabled={isUploading}
+                className="mr-auto px-6 py-2 border border-red-200 text-red-600 rounded-lg font-medium hover:bg-red-50 transition-all text-sm disabled:opacity-50"
+              >
+                Excluir Pedido
+              </button>
+            )}
             <button
               type="button"
               onClick={onClose}

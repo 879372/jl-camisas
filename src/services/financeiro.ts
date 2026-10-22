@@ -1,40 +1,30 @@
 import api from './api';
+import { getAllPages } from './pagination';
 import type { Lancamento } from '../types/financeiro';
 
+export interface FinanceiroFilters {
+  data_inicio?: string;
+  data_fim?: string;
+}
+
 export const financeiroService = {
-  getAll: async () => {
-    const { data } = await api.get('/api/v1/lancamentos/');
+  getAll: async (filters?: FinanceiroFilters) => {
+    return getAllPages<Lancamento>('/api/v1/transactions/', { params: filters });
+  },
+  getSummary: async (filters?: FinanceiroFilters) => {
+    const { data } = await api.get('/api/v1/transactions/resumo/', { params: filters });
     return data;
   },
-  getSummary: async () => {
-    // We can implement a custom endpoint or calculate from the list
-    const { data } = await api.get('/api/v1/lancamentos/');
-    const list = data.results || data;
-    
-    const entradas = list
-      .filter((l: Lancamento) => l.tipo === 'entrada')
-      .reduce((acc: number, l: Lancamento) => acc + Number(l.valor), 0);
-      
-    const saidas = list
-      .filter((l: Lancamento) => l.tipo === 'saida')
-      .reduce((acc: number, l: Lancamento) => acc + Number(l.valor), 0);
-      
-    return {
-      entradas,
-      saidas,
-      saldo: entradas - saidas
-    };
-  },
   create: async (lancamento: Partial<Lancamento>) => {
-    const { data } = await api.post('/api/v1/lancamentos/', lancamento);
+    const { data } = await api.post('/api/v1/transactions/', lancamento);
     return data;
   },
   update: async (id: number, lancamento: Partial<Lancamento>) => {
-    const { data } = await api.put(`/api/v1/lancamentos/${id}/`, lancamento);
+    const { data } = await api.put(`/api/v1/transactions/${id}/`, lancamento);
     return data;
   },
   delete: async (id: number) => {
-    const { data } = await api.delete(`/api/v1/lancamentos/${id}/`);
+    const { data } = await api.delete(`/api/v1/transactions/${id}/`);
     return data;
   }
 };

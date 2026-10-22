@@ -24,62 +24,30 @@ export default function Dashboard() {
     pedidosMes: 0
   });
   const [proximasEntregas, setProximasEntregas] = useState<Pedido[]>([]);
+  const [chartData, setChartData] = useState<Array<{ mes: string; quantidade: number }>>([]);
+  const [criticalCount, setCriticalCount] = useState(0);
   const [loading, setLoading] = useState(true);
 
   const loadDashboardData = async (showLoading = true) => {
     if (showLoading) setLoading(true);
     try {
-      const data = await pedidosService.getAll();
-      const pedidosList: Pedido[] = data.results || data;
-      
-      const now = new Date();
-      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-
-      const newStats = {
-        orcamento: { count: 0, total: 0 },
-        aguardando: { count: 0, total: 0 },
-        producao: { count: 0, total: 0 },
-        concluido: { count: 0, total: 0 },
-        totalItens: 0,
-        faturamentoMes: 0,
-        pedidosMes: 0
-      };
-
-      pedidosList.forEach(p => {
-        const val = Number(p.valor_total) || 0;
-        const itemsQty = p.itens?.reduce((acc: number, item: PedidoItem) => acc + Number(item.quantidade), 0) || 0;
-        newStats.totalItens += itemsQty;
-
-        const dataPedido = new Date(p.created_at || '');
-        if (dataPedido >= startOfMonth) {
-          newStats.pedidosMes++;
-          if (p.status === 'concluido' || p.status_pagamento === 'pago') {
-            newStats.faturamentoMes += val;
-          }
-        }
-
-        if (p.status === 'orcamento') {
-          newStats.orcamento.count++;
-          newStats.orcamento.total += val;
-        } else if (p.status === 'aguardando_pagamento') {
-          newStats.aguardando.count++;
-          newStats.aguardando.total += val;
-        } else if (p.status === 'em_producao') {
-          newStats.producao.count++;
-          newStats.producao.total += val;
-        } else if (p.status === 'concluido') {
-          newStats.concluido.count++;
-          newStats.concluido.total += val;
-        }
+      const data = await pedidosService.getDashboard();
+      const statusValue = (status: string) => ({
+        count: Number(data.por_status[status]?.quantidade || 0),
+        total: Number(data.por_status[status]?.total || 0),
       });
-
-      const upcoming = pedidosList
-        .filter(p => p.status !== 'concluido' && p.status !== 'cancelado' && p.data_entrega_prevista)
-        .sort((a, b) => new Date(a.data_entrega_prevista!).getTime() - new Date(b.data_entrega_prevista!).getTime())
-        .slice(0, 5);
-
-      setStats(newStats);
-      setProximasEntregas(upcoming);
+      setStats({
+        orcamento: statusValue('orcamento'),
+        aguardando: statusValue('aguardando_pagamento'),
+        producao: statusValue('em_producao'),
+        concluido: statusValue('concluido'),
+        totalItens: Number(data.total_itens_pendentes || 0),
+        faturamentoMes: Number(data.faturamento_mes || 0),
+        pedidosMes: data.pedidos_mes,
+      });
+      setProximasEntregas(data.proximas_entregas);
+      setChartData(data.grafico_pedidos);
+      setCriticalCount(data.pedidos_criticos);
     } catch (error) {
       console.error('Failed to load dashboard data', error);
     } finally {
@@ -132,25 +100,47 @@ export default function Dashboard() {
       {/* Operational Stats Cards */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         {[
-          { label: 'Orçamentos', val: stats.orcamento.total, count: stats.orcamento.count, icon: ClipboardList, color: 'slate', border: 'border-b-slate-200' },
-          { label: 'Aguardando Início', val: stats.aguardando.total, count: stats.aguardando.count, icon: Clock, color: 'blue', border: 'border-b-blue-200' },
-          { label: 'Em Produção', val: stats.producao.total, count: stats.producao.count, icon: PlayCircle, color: 'orange', border: 'border-b-orange-200' },
-          { label: 'Concluídos', val: stats.concluido.total, count: stats.concluido.count, icon: CheckCircle2, color: 'emerald', border: 'border-b-emerald-200' },
+          { label: 'Orçamentos', val: stats.orcamento.total, count: stats.orcamento.count, icon: ClipboardList, iconClass: 'bg-slate-50 text-slate-500', countClass: 'text-slate-600', border: 'border-b-slate-200' },
+          { label: 'Aguardando Início', val: stats.aguardando.total, count: stats.aguardando.count, icon: Clock, iconClass: 'bg-blue-50 text-blue-500', countClass: 'text-blue-600', border: 'border-b-blue-200' },
+          { label: 'Em Produção', val: stats.producao.total, count: stats.producao.count, icon: PlayCircle, iconClass: 'bg-orange-50 text-orange-500', countClass: 'text-orange-600', border: 'border-b-orange-200' },
+          { label: 'Concluídos', val: stats.concluido.total, count: stats.concluido.count, icon: CheckCircle2, iconClass: 'bg-emerald-50 text-emerald-500', countClass: 'text-emerald-600', border: 'border-b-emerald-200' },
         ].map((card, i) => (
           <div key={i} className={`bg-white p-6 rounded-3xl border border-slate-100 shadow-sm relative overflow-hidden group hover:shadow-md transition-all border-b-4 ${card.border}`}>
             <div className="flex justify-between items-start mb-6">
-              <div className={`w-12 h-12 rounded-2xl bg-${card.color}-50 flex items-center justify-center text-${card.color}-500 group-hover:scale-110 transition-transform`}>
+              <div className={`w-12 h-12 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform ${card.iconClass}`}>
                 <card.icon className="w-6 h-6" />
               </div>
               <div className="text-right">
                 <span className="block text-[10px] font-semibold text-slate-400 uppercase tracking-widest leading-none mb-1">Pedidos</span>
-                <span className={`text-sm font-bold text-${card.color}-600`}>{card.count}</span>
+                <span className={`text-sm font-bold ${card.countClass}`}>{card.count}</span>
               </div>
             </div>
             <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest">{card.label}</p>
             <p className="text-2xl font-bold text-slate-800 mt-1">{formatCurrency(card.val)}</p>
           </div>
         ))}
+      </div>
+
+      <div className="bg-white rounded-3xl border border-slate-100 shadow-sm p-7">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h3 className="font-bold text-slate-800 text-sm uppercase tracking-widest">Pedidos por mês</h3>
+            <p className="text-[10px] text-slate-400 uppercase mt-1">Últimos seis meses</p>
+          </div>
+        </div>
+        <div className="h-44 flex items-end gap-4">
+          {chartData.map(item => {
+            const max = Math.max(...chartData.map(point => point.quantidade), 1);
+            const height = Math.max((item.quantidade / max) * 100, item.quantidade ? 8 : 2);
+            return (
+              <div key={item.mes} className="flex-1 h-full flex flex-col justify-end items-center gap-2">
+                <span className="text-xs font-bold text-slate-600">{item.quantidade}</span>
+                <div className="w-full max-w-16 rounded-t-xl bg-gradient-to-t from-blue-600 to-indigo-400 transition-all" style={{ height: `${height}%` }} />
+                <span className="text-[10px] font-medium text-slate-400">{item.mes}</span>
+              </div>
+            );
+          })}
+        </div>
       </div>
 
       <div className="grid gap-8 lg:grid-cols-3">
@@ -225,7 +215,7 @@ export default function Dashboard() {
               </div>
               <h3 className="text-xl font-bold uppercase tracking-tighter mb-2 italic">Atenção Crítica</h3>
               <p className="text-slate-400 text-xs font-medium leading-relaxed">
-                Existem <span className="text-orange-400 font-bold">{proximasEntregas.length}</span> pedidos programados para os próximos dias. Verifique a fila de produção.
+                Existem <span className="text-orange-400 font-bold">{criticalCount}</span> pedidos atrasados ou programados para os próximos sete dias. Verifique a fila de produção.
               </p>
               <div className="mt-8 space-y-3">
                  <div className="flex justify-between items-center text-[10px] font-semibold uppercase tracking-widest text-slate-500 border-b border-white/5 pb-2">

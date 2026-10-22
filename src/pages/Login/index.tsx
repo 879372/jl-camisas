@@ -77,7 +77,7 @@ export default function Login() {
             <div>
               <div className="flex justify-between items-center mb-2">
                 <label className="block text-sm font-medium text-slate-700">Senha</label>
-                <a href="#" className="text-sm font-medium text-blue-600 hover:text-blue-500">Esqueceu a senha?</a>
+                <span className="text-xs text-slate-400">Redefinição pelo administrador</span>
               </div>
               <input 
                 type="password" 

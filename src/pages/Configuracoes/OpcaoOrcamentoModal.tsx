@@ -12,17 +12,20 @@ interface OpcaoOrcamentoModalProps {
   opcaoToEdit: OrcamentoOpcao | null;
 }
 
+type OpcaoForm = Omit<Partial<OrcamentoOpcao>, 'valor_adicional'> & {
+  valor_adicional?: number | string;
+};
+
 export default function OpcaoOrcamentoModal({ isOpen, onClose, onSave, opcaoToEdit }: OpcaoOrcamentoModalProps) {
-  const { register, handleSubmit, reset, setValue } = useForm();
+  const { register, handleSubmit, reset, setValue } = useForm<OpcaoForm>();
 
   useEffect(() => {
     if (isOpen) {
       if (opcaoToEdit) {
-        const formData = { ...opcaoToEdit } as any;
-        if (formData.valor_adicional) {
-          formData.valor_adicional = formatCurrency(String(formData.valor_adicional));
-        }
-        reset(formData);
+        reset({
+          ...opcaoToEdit,
+          valor_adicional: formatCurrency(String(opcaoToEdit.valor_adicional || 0)),
+        });
       } else {
         reset({ 
           ativo: true, 
@@ -37,12 +40,14 @@ export default function OpcaoOrcamentoModal({ isOpen, onClose, onSave, opcaoToEd
     }
   }, [opcaoToEdit, isOpen, reset]);
 
-  const onSubmit = async (data: Record<string, unknown>) => {
+  const onSubmit = async (data: OpcaoForm) => {
     try {
-      const payload = { ...data };
-      if (payload.valor_adicional) {
-        payload.valor_adicional = parseCurrency(payload.valor_adicional as string);
-      }
+      const payload: Record<string, unknown> = {
+        ...data,
+        valor_adicional: typeof data.valor_adicional === 'string'
+          ? parseCurrency(data.valor_adicional)
+          : data.valor_adicional || 0,
+      };
 
       if (opcaoToEdit) {
         await updateOrcamentoOpcao(opcaoToEdit.id, payload);

@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import {
   getOrcamentoConfig,
+  createOrcamentoConfig,
   updateOrcamentoConfig,
   getOrcamentoOpcoes,
   deleteOrcamentoOpcao
@@ -56,7 +57,9 @@ export default function OrcamentoConfigPage() {
   }, [opcoes, searchTerm, categoryFilter]);
 
   const configMutation = useMutation({
-    mutationFn: (data: Record<string, unknown>) => updateOrcamentoConfig(config.id, data),
+    mutationFn: (data: Record<string, unknown>) => config?.id
+      ? updateOrcamentoConfig(config.id, data)
+      : createOrcamentoConfig(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['orcamento-config'] });
       alert('Configuração atualizada!');

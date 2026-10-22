@@ -33,6 +33,10 @@ export interface Pedido {
   data_entrega_prevista?: string;
   observacoes?: string;
   observacoes_internas?: string;
+  transportadora?: string;
+  codigo_rastreio?: string;
+  enviado_em?: string;
+  entregue_em?: string;
   itens?: PedidoItem[];
   arquivos?: PedidoArquivo[];
   created_at?: string;
